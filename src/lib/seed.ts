@@ -1,55 +1,11 @@
-import type { Buyer, Product } from './types';
+import type { Buyer } from './types';
 
 /**
- * Dati di esempio, usati SOLO in sviluppo e SOLO al primo avvio (vedi bootstrap).
+ * Buyer di esempio, usati SOLO in sviluppo e SOLO al primo avvio (vedi bootstrap).
+ * Il catalogo di default arriva invece da /catalog.json.
  * Il prodotto 106 (Pepparkakor) è volutamente SCOPERTO: ordinato 18 > giacenza 15,
  * così da poter provare la segnalazione di ammanco.
  */
-
-export const seedCatalog: Product[] = [
-  {
-    number: 101,
-    nameSv: 'Köttbullar',
-    descIt: 'Polpette svedesi di carne, confezione da tavola.',
-    price: 7.9,
-    initialStock: 40,
-  },
-  {
-    number: 102,
-    nameSv: 'Kanelbullar',
-    descIt: 'Girelle alla cannella, il classico dolce da fika.',
-    price: 5.5,
-    initialStock: 30,
-  },
-  {
-    number: 103,
-    nameSv: 'Knäckebröd',
-    descIt: 'Pane croccante di segale in fette.',
-    price: 3.2,
-    initialStock: 50,
-  },
-  {
-    number: 104,
-    nameSv: 'Lingonsylt',
-    descIt: 'Confettura di mirtilli rossi, poco zuccherata.',
-    price: 4.8,
-    initialStock: 25,
-  },
-  {
-    number: 105,
-    nameSv: 'Kalles Kaviar',
-    descIt: 'Crema spalmabile di uova di merluzzo, in tubetto.',
-    price: 6.2,
-    initialStock: 20,
-  },
-  {
-    number: 106,
-    nameSv: 'Pepparkakor',
-    descIt: 'Biscotti sottili di pan di zenzero.',
-    price: 4.0,
-    initialStock: 15, // scoperto: ne verranno ordinati 18
-  },
-];
 
 export const seedBuyers: Buyer[] = [
   {

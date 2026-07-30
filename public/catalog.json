@@ -1,0 +1,50 @@
+[
+  {
+    "number": 101,
+    "nameSv": "Köttbullar",
+    "descIt": "Polpette svedesi di carne, confezione da tavola.",
+    "photoUrl": "",
+    "price": 7.9,
+    "initialStock": 40
+  },
+  {
+    "number": 102,
+    "nameSv": "Kanelbullar",
+    "descIt": "Girelle alla cannella, il classico dolce da fika.",
+    "photoUrl": "",
+    "price": 5.5,
+    "initialStock": 30
+  },
+  {
+    "number": 103,
+    "nameSv": "Knäckebröd",
+    "descIt": "Pane croccante di segale in fette.",
+    "photoUrl": "",
+    "price": 3.2,
+    "initialStock": 50
+  },
+  {
+    "number": 104,
+    "nameSv": "Lingonsylt",
+    "descIt": "Confettura di mirtilli rossi, poco zuccherata.",
+    "photoUrl": "",
+    "price": 4.8,
+    "initialStock": 25
+  },
+  {
+    "number": 105,
+    "nameSv": "Kalles Kaviar",
+    "descIt": "Crema spalmabile di uova di merluzzo, in tubetto.",
+    "photoUrl": "",
+    "price": 6.2,
+    "initialStock": 20
+  },
+  {
+    "number": 106,
+    "nameSv": "Pepparkakor",
+    "descIt": "Biscotti sottili di pan di zenzero.",
+    "photoUrl": "",
+    "price": 4.0,
+    "initialStock": 15
+  }
+]

@@ -1,0 +1,234 @@
+/* ============================ Anagrafica (sola lettura) ============================ */
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--space-5);
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  background: var(--panel);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-lg);
+}
+
+.photo {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--rule-soft);
+  overflow: hidden;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.monogram {
+  font-family: var(--font-serif);
+  font-size: 44px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--brass) 70%, var(--text-weak));
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.topline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.number {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-weak);
+  font-variant-numeric: tabular-nums;
+}
+
+.desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 60ch;
+}
+
+.price {
+  margin-top: 2px;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  color: var(--brass);
+}
+
+/* ============================ Gestione catalogo ============================ */
+
+.filePanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.hint {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.editList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.editHead,
+.editRow {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.3fr) 0.9fr 0.8fr 1.8fr 1.8fr;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.editHead {
+  padding: 0 var(--space-4) var(--space-2);
+}
+
+.editRow {
+  padding: var(--space-3) var(--space-4);
+  background: var(--panel);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-md);
+}
+
+.editIdent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.editName {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.editNum {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-weak);
+  font-variant-numeric: tabular-nums;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.fieldLabel {
+  display: none;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.input,
+.inputNum {
+  height: 38px;
+  width: 100%;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.input:focus-visible,
+.inputNum:focus-visible {
+  border-color: var(--brass);
+  outline: none;
+}
+
+.inputNum {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================ Responsive ============================ */
+
+@media (max-width: 860px) {
+  .editHead {
+    display: none;
+  }
+  .editRow {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+  .fieldLabel {
+    display: block;
+  }
+}
+
+@media (max-width: 560px) {
+  .card {
+    grid-template-columns: 84px 1fr;
+    gap: var(--space-4);
+  }
+  .photo {
+    width: 84px;
+    height: 84px;
+  }
+  .monogram {
+    font-size: 32px;
+  }
+  .filePanel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

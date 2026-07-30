@@ -36,6 +36,7 @@ interface StoreState extends AppState {
   undo: () => void;
   importData: (buyers: Buyer[], catalog?: Product[]) => void;
   setInitialStock: (number: number, value: number) => void;
+  updateProduct: (number: number, patch: Partial<Product>) => void;
   loadCatalog: (catalog: Product[]) => void;
   resetDay: () => void;
   clearAll: () => void;
@@ -109,6 +110,14 @@ export const useStore = create<StoreState>()(
         setInitialStock: (number, value) => {
           const catalog = get().catalog.map((p) =>
             p.number === number ? { ...p, initialStock: value } : p,
+          );
+          commit({ catalog });
+        },
+
+        // Modifica anagrafica/giacenza di un prodotto; si riflette subito nei selettori.
+        updateProduct: (number, patch) => {
+          const catalog = get().catalog.map((p) =>
+            p.number === number ? { ...p, ...patch, number: p.number } : p,
           );
           commit({ catalog });
         },
