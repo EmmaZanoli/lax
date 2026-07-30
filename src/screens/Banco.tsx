@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useStore, orderPieces, orderTotal, formatEuro } from '../lib';
 import { Button, Chip, EmptyState, Panel, ScreenHeader, useToast } from '../components';
@@ -84,6 +84,11 @@ export function Banco() {
     }
   };
 
+  // Nessun import ancora: l'entrata operativa del Banco è l'Import.
+  if (buyers.length === 0) {
+    return <Navigate to="/import" replace />;
+  }
+
   return (
     <>
       <ScreenHeader
@@ -102,27 +107,15 @@ export function Banco() {
         />
       ) : pending.length === 0 ? (
         <Panel>
-          {buyers.length === 0 ? (
-            <EmptyState
-              glyph="✳"
-              title="Nessun ordine caricato"
-              description="Importa il file degli ordini per iniziare a servire il banco."
-            >
-              <Button variant="primary" onClick={() => navigate('/import')}>
-                Vai all'Import
-              </Button>
-            </EmptyState>
-          ) : (
-            <EmptyState
-              glyph="✓"
-              title="Nessuno da servire"
-              description="Tutti i buyer hanno ritirato. Puoi seguire i pagamenti dal Recap ordini."
-            >
-              <Button variant="secondary" onClick={() => navigate('/recap')}>
-                Vai al Recap
-              </Button>
-            </EmptyState>
-          )}
+          <EmptyState
+            glyph="✓"
+            title="Nessuno da servire"
+            description="Tutti i buyer hanno ritirato. Puoi seguire i pagamenti dal Recap ordini."
+          >
+            <Button variant="secondary" onClick={() => navigate('/recap')}>
+              Vai al Recap
+            </Button>
+          </EmptyState>
         </Panel>
       ) : (
         <>

@@ -57,6 +57,7 @@ export function Import() {
   const { catalog, importData } = useStore(
     useShallow((s) => ({ catalog: s.catalog, importData: s.importData })),
   );
+  const noOrdersYet = useStore((s) => s.buyers.length === 0);
 
   const [step, setStep] = useState<Step>('upload');
   const [table, setTable] = useState<ParsedTable | null>(null);
@@ -140,7 +141,20 @@ export function Import() {
       )}
 
       {step === 'upload' && (
-        <ImportDropZone onFile={handleFile} busy={busy} />
+        <>
+          {noOrdersYet && (
+            <div className={`${styles.notice} ${styles.noticeInfo}`}>
+              <span className={styles.noticeGlyph} aria-hidden="true">
+                i
+              </span>
+              <div>
+                Nessun ordine ancora caricato. Importa il file esportato dal Google Form per
+                iniziare la giornata al Banco.
+              </div>
+            </div>
+          )}
+          <ImportDropZone onFile={handleFile} busy={busy} />
+        </>
       )}
 
       {step === 'map' && table && (

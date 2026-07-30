@@ -1,0 +1,80 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background: rgba(15, 15, 13, 0.55);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-6);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--space-3);
+}
+
+.body {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.armedNote {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--unpaid) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--unpaid) 35%, transparent);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.confirm,
+.confirmArmed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.confirm {
+  background: var(--surface);
+  color: var(--unpaid);
+  border-color: color-mix(in srgb, var(--unpaid) 45%, var(--rule));
+}
+.confirm:hover {
+  background: color-mix(in srgb, var(--unpaid) 14%, var(--surface));
+}
+
+.confirmArmed {
+  background: var(--unpaid);
+  color: var(--on-brass);
+  border-color: color-mix(in srgb, var(--unpaid) 70%, black);
+}

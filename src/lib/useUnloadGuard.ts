@@ -8,8 +8,9 @@ import { useStore } from './store';
 export function useUnloadGuard() {
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      const { catalog, buyers } = useStore.getState();
-      if (catalog.length > 0 || buyers.length > 0) {
+      // Avvisa solo se c'è lavoro della giornata (buyer importati): il catalogo
+      // da solo, ricaricabile dal file, non giustifica un avviso.
+      if (useStore.getState().buyers.length > 0) {
         e.preventDefault();
         // Richiesto da alcuni browser per mostrare il prompt.
         e.returnValue = '';

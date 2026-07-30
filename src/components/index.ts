@@ -7,4 +7,5 @@ export type { ChipTone } from './Chip';
 export { Panel } from './Panel';
 export { EmptyState } from './EmptyState';
 export { Drawer } from './Drawer';
+export { ConfirmDialog } from './ConfirmDialog';
 export { ToastProvider, useToast } from './Toast';

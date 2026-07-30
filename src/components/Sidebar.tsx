@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { useStore, totals, formatEuro, stockStatus } from '../lib';
+import { useStore, totals, formatEuro, stockStatus, downloadRecap, downloadBackup } from '../lib';
 import { useToast } from './Toast';
+import { ConfirmDialog } from './ConfirmDialog';
 import styles from './Sidebar.module.css';
 
 interface NavItem {
@@ -39,10 +41,27 @@ export function Sidebar() {
 
   const canUndo = useStore((s) => s.canUndo);
   const undo = useStore((s) => s.undo);
+  const resetDay = useStore((s) => s.resetDay);
+
+  const [resetOpen, setResetOpen] = useState(false);
 
   const handleUndo = () => {
     undo();
     toast.show('Ultima azione annullata');
+  };
+
+  const handleExport = () => {
+    downloadRecap(useStore.getState());
+    toast.show('Recap esportato', 'brass');
+  };
+  const handleBackup = () => {
+    downloadBackup(useStore.getState());
+    toast.show('Backup scaricato', 'brass');
+  };
+  const handleReset = () => {
+    resetDay();
+    setResetOpen(false);
+    toast.show('Buyer azzerati · catalogo conservato', 'brass');
   };
 
   return (
@@ -94,6 +113,15 @@ export function Sidebar() {
         </div>
       </div>
 
+      <div className={styles.tools}>
+        <button type="button" className={styles.toolBtn} onClick={handleExport}>
+          Esporta recap
+        </button>
+        <button type="button" className={styles.toolBtn} onClick={handleBackup}>
+          Backup
+        </button>
+      </div>
+
       <button
         type="button"
         className={styles.undo}
@@ -105,6 +133,23 @@ export function Sidebar() {
         </span>
         Annulla ultima azione
       </button>
+
+      <button type="button" className={styles.reset} onClick={() => setResetOpen(true)}>
+        Nuovo anno · azzera i buyer
+      </button>
+
+      {resetOpen && (
+        <ConfirmDialog
+          title="Nuovo anno"
+          confirmLabel="Azzera i buyer"
+          armedLabel="Sì, azzera tutti i buyer"
+          onConfirm={handleReset}
+          onClose={() => setResetOpen(false)}
+        >
+          Rimuove <strong>tutti i buyer e gli ordini</strong> importati, ma conserva il catalogo
+          (prodotti, prezzi e giacenze). Usalo per ricominciare da un nuovo import.
+        </ConfirmDialog>
+      )}
     </aside>
   );
 }

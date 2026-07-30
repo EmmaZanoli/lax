@@ -126,14 +126,9 @@ export const useStore = create<StoreState>()(
           commit({ catalog });
         },
 
-        // Nuova giornata: azzera ritiro e pagamento, conserva ordini e catalogo.
+        // Nuovo anno: rimuove tutti i buyer (e la data di import), conserva il catalogo.
         resetDay: () => {
-          const buyers = get().buyers.map((b) => ({
-            ...b,
-            pickedUp: false,
-            payment: 'none' as PaymentStatus,
-          }));
-          commit({ buyers });
+          commit({ buyers: [], importedAt: undefined });
         },
 
         clearAll: () => {
