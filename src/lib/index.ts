@@ -12,3 +12,10 @@ export {
   stockBars,
 } from './selectors';
 export type { Totals, StockStatus, StockBar } from './selectors';
+export {
+  recapCsv,
+  backupJson,
+  isBalanced,
+  downloadRecap,
+  downloadBackup,
+} from './export';

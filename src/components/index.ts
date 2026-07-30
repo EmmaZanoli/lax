@@ -6,4 +6,5 @@ export { Chip } from './Chip';
 export type { ChipTone } from './Chip';
 export { Panel } from './Panel';
 export { EmptyState } from './EmptyState';
+export { Drawer } from './Drawer';
 export { ToastProvider, useToast } from './Toast';
