@@ -1,0 +1,376 @@
+/* ============================ Stepper ============================ */
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-weak);
+}
+
+.stepNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+
+.stepLabel {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.stepActive {
+  color: var(--text);
+}
+.stepActive .stepNum {
+  background: var(--brass);
+  border-color: var(--brass-dark);
+  color: var(--on-brass);
+}
+
+.stepDone {
+  color: var(--text-muted);
+}
+.stepDone .stepNum {
+  border-color: color-mix(in srgb, var(--brass) 50%, transparent);
+  color: var(--brass);
+}
+
+.stepSep {
+  flex: 1;
+  height: 1px;
+  min-width: 12px;
+  background: var(--rule-soft);
+}
+
+/* ============================ Dropzone ============================ */
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 320px;
+  padding: var(--space-8);
+  text-align: center;
+  border: 1.5px dashed var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+  cursor: pointer;
+}
+
+.dropzoneOver {
+  border-color: var(--brass);
+  background: color-mix(in srgb, var(--brass) 8%, var(--panel));
+}
+
+.dropIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  color: var(--brass);
+  font-size: 30px;
+  font-family: var(--font-serif);
+}
+
+.dropTitle {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.dropHint {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 42ch;
+}
+
+.dropFormats {
+  margin-top: var(--space-2);
+  font-size: 12px;
+  color: var(--text-weak);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* ============================ Notice ============================ */
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--unpaid) 12%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--unpaid) 40%, transparent);
+  font-size: 14px;
+}
+
+.noticeInfo {
+  background: color-mix(in srgb, var(--pending) 12%, var(--panel));
+  border-color: color-mix(in srgb, var(--pending) 40%, transparent);
+}
+
+.noticeGlyph {
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--unpaid);
+}
+.noticeInfo .noticeGlyph {
+  color: var(--pending);
+}
+
+/* ============================ Column mapper ============================ */
+
+.mapIntro {
+  margin-bottom: var(--space-5);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.mapGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mapRow {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-md);
+}
+
+.mapRowProduct {
+  border-color: color-mix(in srgb, var(--brass) 32%, var(--rule-soft));
+}
+
+.mapColName {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mapColNameBlank {
+  color: var(--text-weak);
+  font-style: italic;
+}
+
+.mapSamples {
+  font-size: 12px;
+  color: var(--text-weak);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mapSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule-soft);
+}
+
+/* ============================ Select ============================ */
+
+.select {
+  height: 38px;
+  padding: 0 var(--space-3);
+  min-width: 180px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--rule);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.select:focus-visible {
+  border-color: var(--brass);
+}
+
+/* ============================ Tables ============================ */
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  padding: 12px var(--space-4);
+  background: var(--panel);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.table tbody td {
+  padding: 12px var(--space-4);
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount {
+  text-align: right;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+}
+
+.buyerName {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.rowBad {
+  background: color-mix(in srgb, var(--unpaid) 9%, transparent);
+}
+
+.muted {
+  color: var(--text-weak);
+}
+
+/* ============================ Reconciliation ============================ */
+
+.reconWarn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--unpaid) 14%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--unpaid) 45%, transparent);
+}
+
+.reconWarnCount {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  color: var(--unpaid);
+  font-variant-numeric: tabular-nums;
+}
+
+.reconOk {
+  background: color-mix(in srgb, var(--received) 12%, var(--panel));
+  border-color: color-mix(in srgb, var(--received) 40%, transparent);
+}
+.reconOk .reconWarnCount {
+  color: var(--received);
+}
+
+.deltaAmmanco {
+  color: var(--unpaid);
+  font-weight: 600;
+}
+.deltaCuscinetto {
+  color: var(--received);
+}
+.deltaEsatto {
+  color: var(--text-muted);
+}
+
+/* ============================ Footer ============================ */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--rule-soft);
+}
+
+.footerInfo {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.footerActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 720px) {
+  .mapRow {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .footerActions {
+    justify-content: flex-end;
+  }
+}
