@@ -1,0 +1,19 @@
+# dipendenze
+node_modules/
+
+# build
+dist/
+dist-ssr/
+
+# cache e log
+*.local
+*.log
+npm-debug.log*
+.vite/
+
+# editor / SO
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+Thumbs.db

@@ -1,0 +1,91 @@
+.money {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.moneyTile {
+  --tone: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-4);
+  background: var(--panel);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-md);
+  border-top: 2px solid var(--tone);
+}
+
+.moneyTile[data-tone='cash'] {
+  --tone: var(--cash);
+}
+.moneyTile[data-tone='received'] {
+  --tone: var(--received);
+}
+.moneyTile[data-tone='pending'] {
+  --tone: var(--pending);
+}
+.moneyTile[data-tone='unpaid'] {
+  --tone: var(--unpaid);
+}
+.moneyTile[data-tone='neutral'] {
+  --tone: var(--rule);
+}
+
+.moneyValue {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.quadratura {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.quadraturaNote {
+  font-size: 13px;
+  color: var(--text-weak);
+}
+
+/* -------------------------------------------------------------- filtri */
+
+.filters {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.filter {
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filterActive {
+  color: var(--on-brass);
+  background: var(--brass);
+  border-color: var(--brass-dark);
+}
+
+@media (max-width: 880px) {
+  .money {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .money {
+    grid-template-columns: 1fr;
+  }
+}

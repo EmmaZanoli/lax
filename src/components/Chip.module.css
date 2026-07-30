@@ -1,0 +1,48 @@
+/* Chip di stato delineato: colore semantico su fondo tinta ~16% + bordo sottile
+   dello stesso colore. */
+
+.chip {
+  --chip: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--chip) 42%, transparent);
+  background: color-mix(in srgb, var(--chip) 16%, transparent);
+  color: color-mix(in srgb, var(--chip) 72%, var(--text));
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--chip);
+  flex: none;
+}
+
+.chip[data-tone='neutral'] {
+  --chip: var(--text-muted);
+}
+.chip[data-tone='cash'] {
+  --chip: var(--cash);
+}
+.chip[data-tone='pending'] {
+  --chip: var(--pending);
+}
+.chip[data-tone='received'] {
+  --chip: var(--received);
+}
+.chip[data-tone='unpaid'] {
+  --chip: var(--unpaid);
+}
+.chip[data-tone='brass'] {
+  --chip: var(--brass);
+}

@@ -1,0 +1,30 @@
+.searchbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 56px;
+  padding: 0 var(--space-5);
+  margin-bottom: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+}
+
+.searchGlyph {
+  font-size: 20px;
+  color: var(--text-weak);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 17px;
+  color: var(--text);
+}
+
+.searchInput::placeholder {
+  color: var(--text-weak);
+}
