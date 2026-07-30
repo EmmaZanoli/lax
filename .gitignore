@@ -4,6 +4,7 @@ node_modules/
 # build
 dist/
 dist-ssr/
+*.tsbuildinfo
 
 # cache e log
 *.local

@@ -13,16 +13,20 @@ import './tokens/global.css';
 
 import { App } from './App';
 import { ToastProvider } from './components';
+import { bootstrap } from './lib';
 
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Elemento #root non trovato');
 
-createRoot(rootEl).render(
-  <StrictMode>
-    <BrowserRouter>
-      <ToastProvider>
-        <App />
-      </ToastProvider>
-    </BrowserRouter>
-  </StrictMode>,
-);
+// Reidrata da IndexedDB (ed eventuale seed in sviluppo) prima del primo render.
+bootstrap().finally(() => {
+  createRoot(rootEl).render(
+    <StrictMode>
+      <BrowserRouter>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </BrowserRouter>
+    </StrictMode>,
+  );
+});

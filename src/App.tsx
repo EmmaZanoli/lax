@@ -1,8 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components';
 import { Banco, Import, Magazzino, Prodotti, Recap } from './screens';
+import { useUnloadGuard } from './lib';
 
 export function App() {
+  useUnloadGuard();
+
   return (
     <Routes>
       <Route element={<Layout />}>

@@ -1,4 +1,6 @@
 import { NavLink } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
+import { useStore, totals, formatEuro } from '../lib';
 import { useToast } from './Toast';
 import styles from './Sidebar.module.css';
 
@@ -22,15 +24,24 @@ function itemClass({ isActive }: { isActive: boolean }) {
   return isActive ? `${styles.item} ${styles.active}` : styles.item;
 }
 
-/** Numeri live in fondo alla nav — per ora valori placeholder (nessun import). */
-const liveNumbers = [
-  { label: 'Contanti', value: '€ 0,00', tone: 'cash' as const },
-  { label: 'Bonifici attesi', value: '€ 0,00', tone: 'pending' as const },
-  { label: 'Da ritirare', value: '0', tone: 'neutral' as const },
-];
-
 export function Sidebar() {
   const toast = useToast();
+
+  // Numeri live agganciati ai selettori derivati.
+  const live = useStore(
+    useShallow((s) => {
+      const t = totals(s);
+      return { cash: t.cash, pending: t.pending, toPick: t.toPickCount };
+    }),
+  );
+
+  const canUndo = useStore((s) => s.canUndo);
+  const undo = useStore((s) => s.undo);
+
+  const handleUndo = () => {
+    undo();
+    toast.show('Ultima azione annullata');
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -64,18 +75,25 @@ export function Sidebar() {
       </nav>
 
       <div className={styles.live} aria-label="Numeri live">
-        {liveNumbers.map((n) => (
-          <div key={n.label} className={styles.liveRow} data-tone={n.tone}>
-            <span className="label">{n.label}</span>
-            <span className={styles.liveValue}>{n.value}</span>
-          </div>
-        ))}
+        <div className={styles.liveRow} data-tone="cash">
+          <span className="label">Contanti</span>
+          <span className={styles.liveValue}>{formatEuro(live.cash)}</span>
+        </div>
+        <div className={styles.liveRow} data-tone="pending">
+          <span className="label">Bonifici attesi</span>
+          <span className={styles.liveValue}>{formatEuro(live.pending)}</span>
+        </div>
+        <div className={styles.liveRow} data-tone="neutral">
+          <span className="label">Da ritirare</span>
+          <span className={styles.liveValue}>{live.toPick}</span>
+        </div>
       </div>
 
       <button
         type="button"
         className={styles.undo}
-        onClick={() => toast.show('Niente da annullare')}
+        onClick={handleUndo}
+        disabled={!canUndo}
       >
         <span className={styles.undoGlyph} aria-hidden="true">
           ↩

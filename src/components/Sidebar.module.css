@@ -153,10 +153,15 @@
     background-color 120ms ease;
 }
 
-.undo:hover {
+.undo:not(:disabled):hover {
   color: var(--text);
   border-color: color-mix(in srgb, var(--brass) 40%, var(--rule));
   background: var(--surface);
+}
+
+.undo:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .undoGlyph {
