@@ -142,3 +142,34 @@ export function stockStatus(state: AppState): StockStatus[] {
     };
   });
 }
+
+export interface StockBar extends StockStatus {
+  initialStock: number;
+  /** Ancora da consegnare = ordered − pickedUp. */
+  toDeliver: number;
+  /** Da consegnare coperto dalla merce fisica. */
+  covered: number;
+  /** Da consegnare NON coperto (ammanco). */
+  short: number;
+  /** Cuscinetto libero oltre gli ordini. */
+  cushion: number;
+  /** Lunghezza di riferimento della barra = max(initialStock, ordered). */
+  reference: number;
+}
+
+/**
+ * Scomposizione della giacenza per la barra di capacità del Magazzino.
+ * I segmenti (pickedUp + covered + short + cushion) sommano sempre a `reference`.
+ */
+export function stockBars(state: AppState): StockBar[] {
+  const initialByNumber = new Map(state.catalog.map((p) => [p.number, p.initialStock]));
+  return stockStatus(state).map((s) => {
+    const initialStock = initialByNumber.get(s.number) ?? 0;
+    const toDeliver = s.ordered - s.pickedUp;
+    const covered = Math.min(toDeliver, Math.max(0, initialStock - s.pickedUp));
+    const short = Math.max(0, toDeliver - covered);
+    const cushion = Math.max(0, initialStock - s.ordered);
+    const reference = Math.max(initialStock, s.ordered);
+    return { ...s, initialStock, toDeliver, covered, short, cushion, reference };
+  });
+}

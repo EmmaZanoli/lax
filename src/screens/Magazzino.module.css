@@ -1,0 +1,254 @@
+/* ============================ Card di sintesi ============================ */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.sumCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--panel);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-md);
+}
+
+.sumValue {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 34px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.sumValueAlert {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 34px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--unpaid);
+}
+
+/* ============================ Banner ammanchi ============================ */
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--unpaid) 14%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--unpaid) 45%, transparent);
+}
+
+.bannerGlyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--unpaid) 25%, transparent);
+  color: var(--unpaid);
+  font-weight: 700;
+  flex: none;
+}
+
+.bannerList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: 6px;
+}
+
+.bannerItem {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.bannerShort {
+  font-variant-numeric: tabular-nums;
+  color: var(--unpaid);
+  font-weight: 600;
+}
+
+/* ============================ Legenda ============================ */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex: none;
+}
+
+.swatchPicked {
+  background: var(--text-weak);
+}
+.swatchCovered {
+  background: var(--brass);
+}
+.swatchCushion {
+  background: var(--received);
+}
+.swatchShort {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--unpaid) 0 4px,
+    color-mix(in srgb, var(--unpaid) 45%, var(--panel)) 4px 8px
+  );
+}
+
+/* ============================ Righe prodotto ============================ */
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 220px 1fr 168px;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--panel);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-md);
+}
+
+.ident {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.identName {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.identNum {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-weak);
+  font-variant-numeric: tabular-nums;
+}
+
+.identDesc {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- barra di capacità ---- */
+
+.barCol {
+  min-width: 0;
+}
+
+.track {
+  display: flex;
+  width: 100%;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--rule-soft);
+  overflow: hidden;
+}
+
+.seg {
+  height: 100%;
+  display: block;
+}
+
+.segPicked {
+  background: var(--text-weak);
+}
+.segCovered {
+  background: var(--brass);
+}
+.segCushion {
+  background: var(--received);
+}
+.segShort {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--unpaid) 0 6px,
+    color-mix(in srgb, var(--unpaid) 45%, var(--panel)) 6px 12px
+  );
+}
+
+/* ---- residuo + spia ---- */
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.residualNum {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.residualNeg {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--unpaid);
+}
+
+/* ============================ Responsive ============================ */
+
+@media (max-width: 720px) {
+  .summary {
+    grid-template-columns: 1fr;
+  }
+  .row {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+  .right {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { useStore, totals, formatEuro } from '../lib';
+import { useStore, totals, formatEuro, stockStatus } from '../lib';
 import { useToast } from './Toast';
 import styles from './Sidebar.module.css';
 
@@ -35,6 +35,8 @@ export function Sidebar() {
     }),
   );
 
+  const scoperti = useStore((s) => stockStatus(s).filter((r) => r.delta < 0).length);
+
   const canUndo = useStore((s) => s.canUndo);
   const undo = useStore((s) => s.undo);
 
@@ -67,7 +69,10 @@ export function Sidebar() {
           {sectionNav.map((it) => (
             <li key={it.to}>
               <NavLink to={it.to} className={itemClass}>
-                {it.label}
+                <span>{it.label}</span>
+                {it.to === '/magazzino' && scoperti > 0 && (
+                  <span className={styles.badge}>{scoperti}</span>
+                )}
               </NavLink>
             </li>
           ))}

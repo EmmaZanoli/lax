@@ -9,5 +9,6 @@ export {
   totals,
   pickedUpValue,
   stockStatus,
+  stockBars,
 } from './selectors';
-export type { Totals, StockStatus } from './selectors';
+export type { Totals, StockStatus, StockBar } from './selectors';
