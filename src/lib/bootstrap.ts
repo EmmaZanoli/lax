@@ -21,20 +21,25 @@ export async function bootstrap(): Promise<void> {
   useStore.getState()._setHydrated(true);
 
   const s = useStore.getState();
-  if (s.catalog.length === 0) {
-    const catalog = await fetchCatalog();
-    if (import.meta.env.DEV && firstRun) {
-      useStore.getState()._replaceAll({
-        catalog,
-        buyers: seedBuyers,
-        importedAt: new Date().toISOString(),
-      });
-    } else if (catalog.length > 0) {
-      useStore.getState()._replaceAll({
-        catalog,
-        buyers: s.buyers,
-        importedAt: s.importedAt,
-      });
-    }
+  const catalog = await fetchCatalog();
+  if (catalog.length === 0) return;
+
+  // In dev: se i numeri di prodotto sono cambiati rispetto allo stato persistito,
+  // ricarica anche i buyer di esempio per evitare ordini con chiavi inesistenti.
+  const oldNumbers = new Set(s.catalog.map((p) => p.number));
+  const catalogChanged = catalog.some((p) => !oldNumbers.has(p.number));
+
+  if (import.meta.env.DEV && (firstRun || catalogChanged)) {
+    useStore.getState()._replaceAll({
+      catalog,
+      buyers: seedBuyers,
+      importedAt: new Date().toISOString(),
+    });
+  } else {
+    useStore.getState()._replaceAll({
+      catalog,
+      buyers: s.buyers,
+      importedAt: s.importedAt,
+    });
   }
 }

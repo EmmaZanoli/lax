@@ -1,50 +1,98 @@
 [
   {
-    "number": 101,
-    "nameSv": "Köttbullar",
-    "descIt": "Polpette svedesi di carne, confezione da tavola.",
+    "number": 1,
+    "nameSv": "Rökt lax, hel",
+    "descIt": "Salmone affumicato intero",
     "photoUrl": "",
-    "price": 7.9,
-    "initialStock": 40
+    "price": 54,
+    "initialStock": 15
   },
   {
-    "number": 102,
-    "nameSv": "Kanelbullar",
-    "descIt": "Girelle alla cannella, il classico dolce da fika.",
+    "number": 2,
+    "nameSv": "Rökt lax, halv",
+    "descIt": "Salmone affumicato mezzo",
     "photoUrl": "",
-    "price": 5.5,
-    "initialStock": 30
-  },
-  {
-    "number": 103,
-    "nameSv": "Knäckebröd",
-    "descIt": "Pane croccante di segale in fette.",
-    "photoUrl": "",
-    "price": 3.2,
-    "initialStock": 50
-  },
-  {
-    "number": 104,
-    "nameSv": "Lingonsylt",
-    "descIt": "Confettura di mirtilli rossi, poco zuccherata.",
-    "photoUrl": "",
-    "price": 4.8,
-    "initialStock": 25
-  },
-  {
-    "number": 105,
-    "nameSv": "Kalles Kaviar",
-    "descIt": "Crema spalmabile di uova di merluzzo, in tubetto.",
-    "photoUrl": "",
-    "price": 6.2,
+    "price": 27,
     "initialStock": 20
   },
   {
-    "number": 106,
-    "nameSv": "Pepparkakor",
-    "descIt": "Biscotti sottili di pan di zenzero.",
+    "number": 3,
+    "nameSv": "Lax med örter, hel",
+    "descIt": "Salmone con erbette intero",
     "photoUrl": "",
-    "price": 4.0,
+    "price": 52,
+    "initialStock": 12
+  },
+  {
+    "number": 4,
+    "nameSv": "Lax med örter, halv",
+    "descIt": "Salmone con erbette mezzo",
+    "photoUrl": "",
+    "price": 26,
+    "initialStock": 18
+  },
+  {
+    "number": 5,
+    "nameSv": "Kokt lax, hel",
+    "descIt": "Salmone cotto intero",
+    "photoUrl": "",
+    "price": 48,
+    "initialStock": 10
+  },
+  {
+    "number": 6,
+    "nameSv": "Kokt lax, halv",
+    "descIt": "Salmone cotto mezzo",
+    "photoUrl": "",
+    "price": 24,
+    "initialStock": 15
+  },
+  {
+    "number": 7,
+    "nameSv": "Ål, hel",
+    "descIt": "Anguilla intera",
+    "photoUrl": "",
+    "price": 58,
+    "initialStock": 8
+  },
+  {
+    "number": 8,
+    "nameSv": "Ål, halv",
+    "descIt": "Anguilla mezza",
+    "photoUrl": "",
+    "price": 29,
+    "initialStock": 12
+  },
+  {
+    "number": 9,
+    "nameSv": "Sill, typ 1",
+    "descIt": "Sil tipo 1",
+    "photoUrl": "",
+    "price": 11,
+    "initialStock": 25
+  },
+  {
+    "number": 10,
+    "nameSv": "Sill, typ 2",
+    "descIt": "Sil tipo 2",
+    "photoUrl": "",
+    "price": 10,
+    "initialStock": 20
+  },
+  {
+    "number": 11,
+    "nameSv": "Sill, typ 3",
+    "descIt": "Sil tipo 3",
+    "photoUrl": "",
+    "price": 12,
+    "initialStock": 20
+  },
+  {
+    "number": 12,
+    "nameSv": "Sill, typ 4",
+    "descIt": "Sil tipo 4",
+    "photoUrl": "",
+    "price": 9,
     "initialStock": 15
   }
 ]
