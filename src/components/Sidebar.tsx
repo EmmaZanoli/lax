@@ -29,6 +29,8 @@ function itemClass({ isActive }: { isActive: boolean }) {
 export function Sidebar() {
   const toast = useToast();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Numeri live agganciati ai selettori derivati.
   const live = useStore(
     useShallow((s) => {
@@ -65,10 +67,18 @@ export function Sidebar() {
   };
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar}${collapsed ? ` ${styles.collapsed}` : ''}`}>
       <div className={styles.brand}>
         <span className={styles.brandDot} aria-hidden="true" />
         <span className={styles.brandName}>lax</span>
+        <button
+          type="button"
+          className={styles.toggle}
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? 'Espandi sidebar' : 'Chiudi sidebar'}
+        >
+          <span aria-hidden="true">{collapsed ? '›' : '‹'}</span>
+        </button>
       </div>
 
       <nav className={styles.nav} aria-label="Navigazione principale">

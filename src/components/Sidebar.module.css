@@ -10,6 +10,64 @@
   padding: var(--space-6) var(--space-4);
   background: var(--panel);
   border-right: 1px solid var(--rule-soft);
+  overflow: hidden;
+  transition: width 220ms ease, padding 220ms ease;
+}
+
+/* ---------------------------------------------------- stato collassato */
+
+.collapsed {
+  width: 52px;
+  padding: var(--space-6) 10px;
+}
+
+.collapsed .brandName,
+.collapsed .nav,
+.collapsed .live,
+.collapsed .tools,
+.collapsed .undo,
+.collapsed .reset {
+  display: none;
+}
+
+.collapsed .brand {
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: center;
+  padding: 0;
+}
+
+/* ------------------------------------------------------- pulsante toggle */
+
+.toggle {
+  margin-left: auto;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.toggle:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--brass) 40%, var(--rule));
+  background: var(--surface);
+}
+
+.collapsed .toggle {
+  margin-left: 0;
 }
 
 /* ------------------------------------------------------------- logotipo */
@@ -286,7 +344,8 @@
      Export/Backup restano raggiungibili dall'intestazione del Recap. */
   .live,
   .tools,
-  .reset {
+  .reset,
+  .toggle {
     display: none;
   }
 

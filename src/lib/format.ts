@@ -22,3 +22,9 @@ export function formatDateTime(iso?: string): string {
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? '—' : dateTime.format(d);
 }
+
+/** Cognome per l'ordinamento: ultima parola del nome completo. */
+export function lastName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  return parts[parts.length - 1] ?? fullName;
+}

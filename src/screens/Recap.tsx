@@ -11,6 +11,7 @@ import {
   isBalanced,
   downloadRecap,
   downloadBackup,
+  lastName,
 } from '../lib';
 import {
   Button,
@@ -85,9 +86,8 @@ export function Recap() {
 
   const rows = useMemo(() => {
     const list = buyers.filter(PREDS[filter]);
-    // Chi non ha ritirato compare comunque per primo, poi per nome.
-    return list.sort(
-      (a, b) => Number(a.pickedUp) - Number(b.pickedUp) || a.name.localeCompare(b.name, 'it'),
+    return list.sort((a, b) =>
+      lastName(a.name).localeCompare(lastName(b.name), 'it'),
     );
   }, [buyers, filter]);
 
