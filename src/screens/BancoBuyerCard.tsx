@@ -66,13 +66,16 @@ export function BancoBuyerCard({ buyer, catalog, onBack, onSave }: BancoBuyerCar
         <ul className={styles.orderList}>
           {lines.map((l) => (
             <li key={l.number} className={styles.orderLine}>
+              <div className={styles.olBox} aria-label={`scatola ${l.number}`}>
+                <span className={styles.olBoxHash}>#</span>
+                <span className={styles.olBoxNum}>{l.number}</span>
+              </div>
               <div className={styles.olMain}>
                 <span className={styles.olName}>
                   {l.product ? l.product.nameSv : `#${l.number}`}
                   {l.product?.weight && (
                     <span className={styles.olWeight}> · {l.product.weight}</span>
                   )}
-                  <span className={styles.olNum}>#{l.number}</span>
                 </span>
                 {l.product?.descIt && <span className={styles.olDesc}>{l.product.descIt}</span>}
                 {!l.product && <span className={styles.olDesc}>fuori catalogo</span>}
