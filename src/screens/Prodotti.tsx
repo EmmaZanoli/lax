@@ -15,6 +15,25 @@ function groupByCategory(catalog: Product[]): [string, Product[]][] {
   return Array.from(map.entries());
 }
 
+function ProductRow({ p }: { p: Product }) {
+  return (
+    <div className={styles.row}>
+      <div className={styles.rowNum}>
+        <span className={styles.rowNumHash}>#</span>
+        <span className={styles.rowNumVal}>{p.number}</span>
+      </div>
+      <div className={styles.rowInfo}>
+        <div className={styles.rowNameLine}>
+          <span className={styles.rowName}>{p.nameSv}</span>
+          {p.weight && <span className={styles.rowWeight}> · {p.weight}</span>}
+        </div>
+        {p.descIt && <p className={styles.rowDesc}>{p.descIt}</p>}
+      </div>
+      <span className={styles.rowPrice}>{formatEuro(p.price)}</span>
+    </div>
+  );
+}
+
 export function Prodotti() {
   const catalog = useStore((s) => s.catalog);
   const [manage, setManage] = useState(false);
@@ -30,7 +49,7 @@ export function Prodotti() {
     <>
       <ScreenHeader
         title="Prodotti"
-        subtitle="Anagrafica del catalogo: nome svedese, numero, descrizione italiana e prezzo."
+        subtitle="Anagrafica del catalogo: numero di scatola, nome svedese, formato e prezzo."
         actions={
           <Button variant="secondary" onClick={() => setManage(true)}>
             <span aria-hidden="true">⚙</span> Gestione catalogo
@@ -55,43 +74,18 @@ export function Prodotti() {
           {grouped.map(([category, products]) => (
             <section key={category} className={styles.group}>
               <h3 className={styles.groupTitle}>{category}</h3>
-              <div className={styles.cards}>
-                {products.map((p) => <ProductCard key={p.number} p={p} />)}
+              <div className={styles.table}>
+                {products.map((p) => <ProductRow key={p.number} p={p} />)}
               </div>
             </section>
           ))}
         </div>
       ) : (
-        <div className={styles.cards}>
-          {catalog.map((p) => <ProductCard key={p.number} p={p} />)}
+        <div className={styles.table}>
+          {catalog.map((p) => <ProductRow key={p.number} p={p} />)}
         </div>
       )}
     </>
-  );
-}
-
-function ProductCard({ p }: { p: Product }) {
-  return (
-    <article className={styles.card}>
-      <div className={styles.photo}>
-        {p.photoUrl ? (
-          <img className={styles.img} src={p.photoUrl} alt={p.nameSv} loading="lazy" />
-        ) : (
-          <span className={styles.monogram} aria-hidden="true">
-            {p.nameSv.charAt(0)}
-          </span>
-        )}
-      </div>
-      <div className={styles.info}>
-        <div className={styles.topline}>
-          <h2 className={styles.name}>{p.nameSv}</h2>
-          {p.weight && <span className={styles.weightBadge}>{p.weight}</span>}
-          <span className={styles.number}>#{p.number}</span>
-        </div>
-        <p className={styles.desc}>{p.descIt || '—'}</p>
-        <span className={styles.price}>{formatEuro(p.price)}</span>
-      </div>
-    </article>
   );
 }
 
