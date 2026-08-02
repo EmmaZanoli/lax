@@ -2,9 +2,11 @@ import type { Buyer } from './types';
 
 /**
  * Buyer di esempio, usati SOLO in sviluppo e SOLO al primo avvio (vedi bootstrap).
- * Il catalogo di default arriva invece da /catalog.json.
- * Il prodotto 12 (Sill typ 4) è volutamente SCOPERTO: ordinato 18 > giacenza 15,
- * così da poter provare la segnalazione di ammanco.
+ * Il catalogo di default arriva invece da /catalog.json (initialStock 0 in prod).
+ *
+ * Prodotti scoperti nel seed:
+ *   #1  Kallrökt laxfilé 1/1 — ordinati 4, giacenza 3 → ammanco 1
+ *   #12 Pepparrotsgravadsill — ordinati 7, giacenza 6 → ammanco 1
  */
 
 export const seedBuyers: Buyer[] = [
@@ -12,7 +14,7 @@ export const seedBuyers: Buyer[] = [
     id: 'b1',
     name: 'Anna Bergström',
     phone: '333 1112221',
-    order: { 1: 2, 10: 1, 12: 3 },
+    order: { 1: 1, 5: 1, 9: 2 },
     pickedUp: true,
     payment: 'cash',
   },
@@ -20,7 +22,7 @@ export const seedBuyers: Buyer[] = [
     id: 'b2',
     name: 'Marco Rossi',
     phone: '347 2223331',
-    order: { 2: 4, 12: 2 },
+    order: { 2: 2, 10: 1 },
     pickedUp: true,
     payment: 'received',
   },
@@ -28,14 +30,14 @@ export const seedBuyers: Buyer[] = [
     id: 'b3',
     name: 'Lena Öberg',
     phone: '340 5556667',
-    order: { 9: 5, 11: 1 },
+    order: { 3: 1, 7: 1 },
     pickedUp: false,
     payment: 'none',
   },
   {
     id: 'b4',
     name: 'Giulia Conti',
-    order: { 1: 1, 2: 2, 12: 4 },
+    order: { 4: 2, 11: 2 },
     pickedUp: true,
     payment: 'pending',
   },
@@ -43,14 +45,14 @@ export const seedBuyers: Buyer[] = [
     id: 'b5',
     name: 'Erik Lund',
     phone: '331 4445556',
-    order: { 10: 3, 12: 2 },
+    order: { 1: 1, 8: 1, 12: 3 },
     pickedUp: true,
     payment: 'none',
   },
   {
     id: 'b6',
     name: 'Sofia Ricci',
-    order: { 11: 2, 9: 2 },
+    order: { 6: 2, 9: 2 },
     pickedUp: false,
     payment: 'none',
   },
@@ -58,7 +60,7 @@ export const seedBuyers: Buyer[] = [
     id: 'b7',
     name: 'Johan Nilsson',
     phone: '328 7778889',
-    order: { 1: 3, 12: 3 },
+    order: { 1: 2, 12: 2 },
     pickedUp: true,
     payment: 'cash',
   },
@@ -73,7 +75,7 @@ export const seedBuyers: Buyer[] = [
   {
     id: 'b9',
     name: 'Paolo Ferrari',
-    order: { 9: 4, 11: 3 },
+    order: { 5: 1, 9: 3 },
     pickedUp: true,
     payment: 'received',
   },
@@ -81,8 +83,24 @@ export const seedBuyers: Buyer[] = [
     id: 'b10',
     name: 'Karin Ax',
     phone: '351 2340012',
-    order: { 1: 2, 12: 2 },
+    order: { 3: 1, 11: 2 },
     pickedUp: true,
     payment: 'pending',
   },
 ];
+
+/** Giacenze iniziali per il seed di sviluppo. Non usate in produzione. */
+export const seedStocks: Record<number, number> = {
+  1: 3,  // scoperto: ordinati 4
+  2: 4,
+  3: 3,
+  4: 3,
+  5: 3,
+  6: 3,
+  7: 2,
+  8: 2,
+  9: 8,
+  10: 4,
+  11: 5,
+  12: 6, // scoperto: ordinati 7
+};

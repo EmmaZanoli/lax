@@ -87,6 +87,7 @@ export function RecapAddDrawer({ onClose }: { onClose: () => void }) {
               <li key={p.number} className={styles.addLine} data-active={qty > 0}>
                 <span className={styles.dlName}>
                   {p.nameSv}
+                  {p.weight && <span className={styles.dlWeight}> · {p.weight}</span>}
                   <span className={styles.dlNum}>#{p.number}</span>
                 </span>
                 <span className={styles.addLinePrice}>{formatEuro(p.price)}</span>

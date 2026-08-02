@@ -35,7 +35,10 @@ function CatalogEditRow({ product }: { product: Product }) {
     <div className={styles.editRow}>
       <div className={styles.editIdent}>
         <span className={styles.editName}>{product.nameSv}</span>
-        <span className={styles.editNum}>#{product.number}</span>
+        <span className={styles.editNum}>
+          #{product.number}
+          {product.weight && <span className={styles.editWeight}> · {product.weight}</span>}
+        </span>
       </div>
 
       <label className={styles.field}>

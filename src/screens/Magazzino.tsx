@@ -108,12 +108,16 @@ export function Magazzino() {
               {shortBars.length === 1 ? '1 prodotto scoperto' : `${shortBars.length} prodotti scoperti`}
             </strong>
             <div className={styles.bannerList}>
-              {shortBars.map((b) => (
-                <span key={b.number} className={styles.bannerItem}>
-                  {productByNumber.get(b.number)?.nameSv ?? `#${b.number}`}{' '}
-                  <span className={styles.bannerShort}>−{-b.delta}</span>
-                </span>
-              ))}
+              {shortBars.map((b) => {
+                const p = productByNumber.get(b.number);
+                return (
+                  <span key={b.number} className={styles.bannerItem}>
+                    {p?.nameSv ?? `#${b.number}`}
+                    {p?.weight && ` · ${p.weight}`}{' '}
+                    <span className={styles.bannerShort}>−{-b.delta}</span>
+                  </span>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -136,6 +140,7 @@ export function Magazzino() {
               <div className={styles.ident}>
                 <span className={styles.identName}>
                   {p?.nameSv ?? `#${b.number}`}
+                  {p?.weight && <span className={styles.identWeight}> · {p.weight}</span>}
                   <span className={styles.identNum}>#{b.number}</span>
                 </span>
                 <span className={styles.identDesc}>

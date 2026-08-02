@@ -184,6 +184,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+.olWeight {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 .olDesc {
   font-size: 13px;
   color: var(--text-muted);

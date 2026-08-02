@@ -1,7 +1,7 @@
 import { get as idbGet } from 'idb-keyval';
 import { STORAGE_KEY, useStore } from './store';
 import { fetchCatalog } from './catalog';
-import { seedBuyers } from './seed';
+import { seedBuyers, seedStocks } from './seed';
 
 /**
  * Avvio dell'app: reidrata lo stato da IndexedDB PRIMA del primo render
@@ -30,8 +30,11 @@ export async function bootstrap(): Promise<void> {
   const catalogChanged = catalog.some((p) => !oldNumbers.has(p.number));
 
   if (import.meta.env.DEV && (firstRun || catalogChanged)) {
+    const catalogWithStock = catalog.map((p) =>
+      seedStocks[p.number] !== undefined ? { ...p, initialStock: seedStocks[p.number] } : p,
+    );
     useStore.getState()._replaceAll({
-      catalog,
+      catalog: catalogWithStock,
       buyers: seedBuyers,
       importedAt: new Date().toISOString(),
     });

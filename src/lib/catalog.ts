@@ -17,7 +17,9 @@ function toProduct(raw: unknown): Product | null {
   const descIt = typeof o.descIt === 'string' ? o.descIt : '';
   const photoUrl =
     typeof o.photoUrl === 'string' && o.photoUrl.trim() !== '' ? o.photoUrl.trim() : undefined;
-  return { number, nameSv, descIt, price, initialStock, photoUrl };
+  const weight = typeof o.weight === 'string' ? o.weight.trim() : '';
+  const category = typeof o.category === 'string' && o.category.trim() !== '' ? o.category.trim() : undefined;
+  return { number, nameSv, weight, category, descIt, price, initialStock, photoUrl };
 }
 
 /** Estrae e valida un catalogo da dati JSON (array o wrapper `catalog`/`products`/backup). */

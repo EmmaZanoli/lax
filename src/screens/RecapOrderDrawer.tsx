@@ -76,6 +76,9 @@ export function RecapOrderDrawer({ id }: { id: string }) {
           <li key={l.number} className={styles.dLine}>
             <span className={styles.dlName}>
               {l.product ? l.product.nameSv : `#${l.number}`}
+              {l.product?.weight && (
+                <span className={styles.dlWeight}> · {l.product.weight}</span>
+              )}
               <span className={styles.dlNum}>#{l.number}</span>
             </span>
             <span className={styles.dlQty}>×{l.qty}</span>

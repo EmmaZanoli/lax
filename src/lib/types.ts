@@ -4,10 +4,12 @@ export type PaymentStatus = 'none' | 'cash' | 'pending' | 'received';
 /** Prodotto del catalogo. Il `number` è la chiave stabile per l'aggancio col CSV. */
 export interface Product {
   number: number;
-  nameSv: string; // nome svedese (mostrato)
-  descIt: string; // descrizione italiana
+  nameSv: string;      // nome svedese (mostrato)
+  weight: string;      // formato/peso (es. "1/1", "1/2", "300g") — necessario per distinguere prodotti omonimi
+  category?: string;   // raggruppamento (es. "Salmone", "Anguilla", "Aringhe")
+  descIt: string;      // descrizione italiana
   photoUrl?: string;
-  price: number; // unica fonte di verità per i prezzi
+  price: number;       // unica fonte di verità per i prezzi
   initialStock: number; // giacenza iniziale (compilata quando arriva la merce)
 }
 

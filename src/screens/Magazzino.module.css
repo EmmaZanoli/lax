@@ -165,6 +165,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+.identWeight {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 .identDesc {
   font-size: 12px;
   color: var(--text-muted);

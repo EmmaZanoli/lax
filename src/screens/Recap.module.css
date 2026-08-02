@@ -233,6 +233,12 @@
   color: var(--text-weak);
   font-variant-numeric: tabular-nums;
 }
+.dlWeight {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
 .dlQty {
   font-family: var(--font-serif);
   font-variant-numeric: tabular-nums;

@@ -1,5 +1,27 @@
 /* ============================ Anagrafica (sola lettura) ============================ */
 
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.groupTitle {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 2px;
+}
+
 .cards {
   display: flex;
   flex-direction: column;
@@ -69,6 +91,20 @@
   font-weight: 600;
   color: var(--text-weak);
   font-variant-numeric: tabular-nums;
+}
+
+.weightBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
 }
 
 .desc {
@@ -157,6 +193,11 @@
   font-weight: 600;
   color: var(--text-weak);
   font-variant-numeric: tabular-nums;
+}
+
+.editWeight {
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .field {

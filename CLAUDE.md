@@ -28,6 +28,8 @@ type PaymentStatus = 'none' | 'cash' | 'pending' | 'received';
 interface Product {
   number: number;      // chiave stabile
   nameSv: string;      // nome svedese (mostrato)
+  weight: string;      // formato/peso (es. "1/1", "1/2", "300g") — necessario perché lo stesso nameSv può avere formati diversi
+  category?: string;   // raggruppamento ("Salmone" / "Anguilla" / "Aringhe")
   descIt: string;      // descrizione italiana
   photoUrl?: string;
   price: number;       // unica fonte di verità per i prezzi
