@@ -359,6 +359,121 @@
   margin-top: var(--space-3);
 }
 
+/* ============================ Drawer aggiunta ordine manuale ============================ */
+
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.addLabel {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: var(--space-3);
+}
+.addLabel:first-child {
+  margin-top: 0;
+}
+
+.addInput {
+  height: 42px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 100ms ease;
+}
+.addInput::placeholder {
+  color: var(--text-weak);
+}
+.addInput:focus {
+  border-color: var(--brass);
+}
+
+.addLine {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  transition: color 100ms ease;
+}
+.addLine:first-child {
+  border-top: 1px solid var(--rule-soft);
+}
+.addLine[data-active='false'] .dlName,
+.addLine[data-active='false'] .addLinePrice {
+  color: var(--text-weak);
+}
+
+.addLinePrice {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.addQtyRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.addQtyBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease;
+}
+.addQtyBtn:hover:not(:disabled) {
+  background: var(--lift);
+  border-color: color-mix(in srgb, var(--brass) 40%, var(--rule));
+}
+.addQtyBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.addQtyVal {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.addEmpty {
+  font-size: 14px;
+  color: var(--text-muted);
+  padding: var(--space-4) 0;
+}
+
+.addActions {
+  margin-top: var(--space-5);
+}
+
 /* ============================ Responsive ============================ */
 
 @media (max-width: 1000px) {

@@ -24,6 +24,7 @@ import {
   type ChipTone,
 } from '../components';
 import { RecapOrderDrawer } from './RecapOrderDrawer';
+import { RecapAddDrawer } from './RecapAddDrawer';
 import styles from './Recap.module.css';
 
 type FilterKey = 'to-pick' | 'to-pay' | 'cash' | 'pending' | 'received' | 'ritirati' | 'all';
@@ -72,6 +73,7 @@ export function Recap() {
 
   const [filter, setFilter] = useState<FilterKey>('to-pick');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
   const lastIdRef = useRef<string | null>(null);
   if (selectedId) lastIdRef.current = selectedId;
 
@@ -118,6 +120,9 @@ export function Recap() {
             <Chip tone={balanced ? 'received' : 'unpaid'}>
               {balanced ? 'I conti quadrano' : 'Conti da verificare'}
             </Chip>
+            <Button variant="secondary" onClick={() => setAddOpen(true)}>
+              Aggiungi ordine
+            </Button>
             <Button variant="secondary" onClick={onExport} disabled={buyers.length === 0}>
               Esporta recap
             </Button>
@@ -208,6 +213,10 @@ export function Recap() {
 
       <Drawer open={!!selectedId} onClose={() => setSelectedId(null)} title="Ordine">
         {lastIdRef.current && <RecapOrderDrawer id={lastIdRef.current} />}
+      </Drawer>
+
+      <Drawer open={addOpen} onClose={() => setAddOpen(false)} title="Nuovo ordine manuale">
+        {addOpen && <RecapAddDrawer onClose={() => setAddOpen(false)} />}
       </Drawer>
     </>
   );

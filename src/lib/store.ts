@@ -35,6 +35,7 @@ interface StoreState extends AppState {
   setPickup: (id: string, value: boolean) => void;
   undo: () => void;
   importData: (buyers: Buyer[], catalog?: Product[]) => void;
+  addBuyer: (buyer: Buyer) => void;
   setInitialStock: (number: number, value: number) => void;
   updateProduct: (number: number, patch: Partial<Product>) => void;
   loadCatalog: (catalog: Product[]) => void;
@@ -105,6 +106,11 @@ export const useStore = create<StoreState>()(
             ...(catalog ? { catalog } : {}),
             importedAt: new Date().toISOString(),
           });
+        },
+
+        // Aggiunge un singolo buyer manuale senza toccare gli altri.
+        addBuyer: (buyer) => {
+          commit({ buyers: [...get().buyers, buyer] });
         },
 
         setInitialStock: (number, value) => {
