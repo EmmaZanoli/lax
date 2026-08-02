@@ -3,10 +3,6 @@ import type { Buyer } from './types';
 /**
  * Buyer di esempio, usati SOLO in sviluppo e SOLO al primo avvio (vedi bootstrap).
  * Il catalogo di default arriva invece da /catalog.json (initialStock 0 in prod).
- *
- * Prodotti scoperti nel seed:
- *   #1  Kallrökt laxfilé 1/1 — ordinati 4, giacenza 3 → ammanco 1
- *   #12 Pepparrotsgravadsill — ordinati 7, giacenza 6 → ammanco 1
  */
 
 export const seedBuyers: Buyer[] = [
@@ -91,7 +87,7 @@ export const seedBuyers: Buyer[] = [
 
 /** Giacenze iniziali per il seed di sviluppo. Non usate in produzione. */
 export const seedStocks: Record<number, number> = {
-  1: 3,  // scoperto: ordinati 4
+  1: 5,
   2: 4,
   3: 3,
   4: 3,
@@ -102,5 +98,5 @@ export const seedStocks: Record<number, number> = {
   9: 8,
   10: 4,
   11: 5,
-  12: 6, // scoperto: ordinati 7
+  12: 8,
 };
