@@ -9,11 +9,13 @@ import {
   parseQuantity,
   reconcile,
   tableFromWorkbookBuffer,
+  type Mapping,
+  type ParsedTable,
 } from './index';
 
 // Sorgente UFFICIALE dell'import: l'export del foglio risposte del Google Form.
-// La versione anonimizzata (nomi/telefoni/email finti, quantità reali) vive nel
-// root della repo. Il catalogo reale è /public/catalog.json.
+// La versione anonimizzata (nomi di fantasia unici, telefoni/email placeholder,
+// quantità reali) vive nel root della repo. Il catalogo reale è /public/catalog.json.
 const XLSX_PATH = fileURLToPath(new URL('../../../ordine.xlsx', import.meta.url));
 const CATALOG_PATH = fileURLToPath(new URL('../../../public/catalog.json', import.meta.url));
 
@@ -147,15 +149,45 @@ describe('buildDrafts — import del foglio reale', () => {
     expect(big.pieces).toBe(74);
   });
 
-  it('segnala i nomi duplicati senza unirli (nel file anonimizzato sono tutti uguali)', () => {
-    // Nella versione anonimizzata tutti i 97 nomi sono "Cognome Nome":
-    // devono restare 97 buyer distinti, ciascuno con un avviso di duplicato.
+  it('nel foglio d\'esempio i 97 nomi di fantasia sono unici: nessun avviso di duplicato', () => {
     const withDup = drafts.filter((d) => d.issues.some((i) => i.type === 'duplicate-name'));
-    expect(withDup.length).toBe(97);
-    const dup = drafts[0].issues.find((i) => i.type === 'duplicate-name');
-    expect(dup).toMatchObject({ type: 'duplicate-name', count: 97 });
-    // L'import NON deve dedurre nomi unici: i 97 restano separati.
+    expect(withDup.length).toBe(0);
+    const names = drafts.map((d) => d.buyer.name.trim().toLowerCase());
+    expect(names.every((n) => n !== '')).toBe(true);
+    expect(new Set(names).size).toBe(97);
     expect(new Set(drafts.map((d) => d.buyer.id)).size).toBe(97);
+  });
+});
+
+describe('buildDrafts — nomi duplicati (input sintetico)', () => {
+  // Il foglio d'esempio ora ha nomi unici; la rilevazione dei duplicati (possibile
+  // doppio invio) si verifica con un input costruito ad hoc: due righe stesso nome.
+  const table: ParsedTable = {
+    fileName: 'synth.csv',
+    columns: ['Cognome e nome', '1. Prodotto'],
+    rows: [
+      ['Mario Rossi', '1'],
+      ['MARIO  ROSSI', '2'], // stesso nome (case/spazi diversi) ⇒ duplicato
+      ['Lucia Bianchi', '1'],
+    ],
+  };
+  const mapping: Mapping = [{ kind: 'name' }, { kind: 'product', number: 1 }];
+  const synth = buildDrafts(table, mapping, catalog);
+
+  it('segnala le righe con nome duplicato (match case/spazi-insensitive), senza unirle', () => {
+    // Le due righe "Mario Rossi" restano DUE buyer distinti, ciascuno segnalato.
+    expect(synth.length).toBe(3);
+    expect(new Set(synth.map((d) => d.buyer.id)).size).toBe(3);
+    expect(synth[0].issues).toContainEqual({ type: 'duplicate-name', count: 2 });
+    expect(synth[1].issues).toContainEqual({ type: 'duplicate-name', count: 2 });
+    // Le quantità restano indipendenti (nessun merge): 1 e 2 pezzi del prodotto 1.
+    expect(synth[0].buyer.order).toEqual({ 1: 1 });
+    expect(synth[1].buyer.order).toEqual({ 1: 2 });
+  });
+
+  it('non segnala i nomi unici', () => {
+    expect(synth[2].buyer.name).toBe('Lucia Bianchi');
+    expect(synth[2].issues.some((i) => i.type === 'duplicate-name')).toBe(false);
   });
 });
 
