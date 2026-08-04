@@ -10,6 +10,7 @@ import {
   reconcile,
   saveMapping,
   signature,
+  unknownProductNumbers,
   type Mapping,
   type ParsedTable,
 } from '../lib/import';
@@ -71,10 +72,16 @@ export function Import() {
   const recon = useMemo(() => reconcile(drafts, catalog), [drafts, catalog]);
 
   const validCount = drafts.filter((d) => d.valid).length;
-  const problemCount = drafts.filter((d) => d.issues.length > 0).length;
+  const problemCount = drafts.filter((d) =>
+    d.issues.some((i) => i.type === 'name-missing' || i.type === 'bad-quantity'),
+  ).length;
+  const duplicateCount = drafts.filter((d) =>
+    d.issues.some((i) => i.type === 'duplicate-name'),
+  ).length;
   const hasName = mapping.some((r) => r.kind === 'name');
   const productNumbers = mapping.flatMap((r) => (r.kind === 'product' ? [r.number] : []));
   const duplicated = productNumbers.length !== new Set(productNumbers).size;
+  const unknownNumbers = useMemo(() => unknownProductNumbers(mapping, catalog), [mapping, catalog]);
   const canProceedMap = hasName && productNumbers.length > 0 && !duplicated;
 
   const handleFile = async (file: File) => {
@@ -173,7 +180,9 @@ export function Import() {
                   ? 'Aggancia almeno una colonna a un prodotto.'
                   : duplicated
                     ? 'Un prodotto è mappato su più colonne.'
-                    : `${table.rows.length} righe rilevate.`}
+                    : unknownNumbers.length > 0
+                      ? `Numeri non in catalogo: ${unknownNumbers.join(', ')}. Aggiungili al catalogo o ignora le colonne.`
+                      : `${table.rows.length} righe rilevate.`}
             </span>
             <div className={styles.footerActions}>
               <Button variant="primary" onClick={goPreview} disabled={!canProceedMap}>
@@ -192,6 +201,7 @@ export function Import() {
             <span className={styles.footerInfo}>
               {validCount} buyer verranno importati
               {problemCount > 0 && ` · ${problemCount} righe con problemi`}
+              {duplicateCount > 0 && ` · ${duplicateCount} nomi duplicati da rivedere`}
               {validCount < drafts.length &&
                 ` · ${drafts.length - validCount} righe senza nome escluse`}
             </span>

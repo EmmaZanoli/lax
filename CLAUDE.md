@@ -19,9 +19,10 @@ L'interfaccia è in **italiano**; i nomi dei prodotti restano in **svedese**.
   - concorre a una voce **separata** nel Recap, *Valore uso personale* = Σ(quantità × prezzo di catalogo);
   - **fuori da ogni calcolo di giacenza/Magazzino**: la merce personale viene tolta fisicamente dalle casse prima della consegna, quindi non è tra i prodotti da ritirare e la giacenza iniziale non la comprende. Gli ordini `personal` **non compaiono** nel Magazzino.
   - Selettori/filtri clienti e di magazzino devono **sempre** filtrare via i `personal` (`isCustomer`/`isPersonal` in `selectors.ts`).
-- **I prezzi vivono solo nel catalogo**, mai nel CSV. Il totale di un buyer si ricalcola sempre come Σ(quantità × prezzo di catalogo). Se il file d'import contenesse un totale, va ignorato.
+- **I prezzi vivono solo nel catalogo**, mai nel file d'import. Il totale di un buyer si ricalcola sempre come Σ(quantità × prezzo di catalogo). Se il file d'import contenesse un totale, va ignorato.
 - **La giacenza la scala il RITIRO (clienti), non il pagamento.** `residual = initialStock − (pezzi clienti con pickedUp=true)`. Gli ordini `personal` non toccano la giacenza.
-- **Il numero di prodotto è la chiave stabile** per l'aggancio catalogo ↔ CSV (preferirlo al nome svedese).
+- **Sorgente d'import ufficiale: l'export del foglio risposte del Google Form** (`ordine.xlsx`/CSV). Un file d'esempio anonimizzato (nomi/telefoni/email finti, quantità reali) vive nel root come `ordine.xlsx` ed è il fixture del test d'import.
+- **Il numero di prodotto è la chiave stabile** per l'aggancio catalogo ↔ foglio risposte. Le colonne-prodotto si riconoscono dall'**intero iniziale dell'etichetta** (`^\s*(\d+)\.`): quell'intero È il numero di catalogo. **Aggancio SEMPRE per numero, mai per nome** (le etichette hanno tab, spazi finali e descrizioni incoerenti — es. il prodotto 6 ha la descrizione duplicata/garbled). Le colonne non-prodotto (timestamp, diramazioni "Vuoi ordinare anche altri prodotti?" con eventuale suffisso, "Commenti") vengono ignorate; `email`/`nome`/`telefono` per parola chiave. Gli ordini fuori-form e per uso personale **non** entrano dall'Import (arrivano da "Aggiungi ordine").
 - **L'app si usa anche nei giorni dopo** il ritiro (per spuntare i bonifici che arrivano): lo stato deve sopravvivere a chiusura/refresh.
 
 ---
@@ -47,6 +48,7 @@ interface Buyer {
   id: string;
   name: string;
   phone?: string;
+  email?: string; // opzionale; da "Indirizzo email" del foglio risposte
   order: Record<number, number>; // numeroProdotto -> quantità
   pickedUp: boolean;
   payment: PaymentStatus;
@@ -71,7 +73,7 @@ Catalogo e buyer hanno **cicli di vita diversi**: il catalogo cambia di rado (fi
 
 | Rotta | Nome | Ruolo |
 |---|---|---|
-| `/import` | Import | Carica file, mappa colonne, anteprima, riconciliazione ordinato vs giacenza. |
+| `/import` | Import | Carica l'export del foglio risposte del Google Form, mappa le colonne (prodotti agganciati **per numero**; email/nome/telefono per parola chiave), anteprima con evidenza righe problematiche e **nomi duplicati** (segnalati, mai uniti), riconciliazione ordinato vs giacenza. Salva la mappatura per un reimport immediato dello stesso formato. |
 | `/banco` | Banco | Operativo. Search-first, **solo chi non ha ritirato**. Trova → ordine+importo → scegli pagamento → **Salva** → torna alla ricerca. Calcolo resto per i contanti. |
 | `/magazzino` | Magazzino | Giacenze. Barra di capacità per prodotto (ritirati / da consegnare / cuscinetto / scoperto). Solo ordini clienti: gli `personal` non incidono sulla giacenza e non compaiono. |
 | `/recap` | Recap ordini | Tutti gli ordini, filtrabili (default "Da ritirare"; filtro **Uso personale** dedicato). 5 voci denaro clienti + quadratura, più striscia **Valore uso personale** e **Totale ordinato (clienti + personale)**. Sezione collassabile **Ordinato totale per prodotto · incluso uso personale** (`orderedTotals`), solo per riconciliare la fattura fornitore — distinta da Magazzino e cassa. Righe modificabili nel **drawer** laterale (i `personal` sono in sola lettura, senza ritiro/pagamento). "Aggiungi ordine" ha il selettore Cliente / Uso personale. Export recap + backup. |
@@ -122,7 +124,7 @@ seller · buyer · ordine · ritiro (da ritirare / ritirato) · pagamento (da pa
 
 ## In sospeso (dati reali non ancora disponibili)
 
-- **Prezzi + formato CSV reale** → verificare se il CSV cita i prodotti per **numero** (aggancio immediato) o per nome. Riempire `catalog.json` con i prezzi veri.
-- **Contenuti catalogo** (descrizioni italiane, nomi svedesi definitivi, foto) → in `catalog.json`.
+- **Formato d'import: RISOLTO.** Il foglio risposte del Google Form cita i prodotti per **numero** (intero iniziale dell'etichetta) → aggancio per numero, tarato sul file reale e coperto da test (`src/lib/import/import.test.ts`, fixture `ordine.xlsx`).
+- **Contenuti catalogo** (descrizioni italiane, nomi svedesi definitivi, foto) → in `catalog.json`. I prezzi reali 1–12 sono già in `catalog.json`.
 
 Finché mancano, si lavora con dati di esempio (seed solo in sviluppo, con almeno un prodotto scoperto per testare l'ammanco e un ordine `personal` per testare l'uso personale).

@@ -27,6 +27,7 @@ export interface Buyer {
   id: string;
   name: string;
   phone?: string;
+  email?: string; // opzionale; dal foglio risposte del Google Form ("Indirizzo email")
   order: Record<number, number>; // numeroProdotto -> quantità
   pickedUp: boolean;
   payment: PaymentStatus;

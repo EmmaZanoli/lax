@@ -1,4 +1,4 @@
-export { parseFile } from './parse';
+export { parseFile, tableFromWorkbookBuffer } from './parse';
 export {
   autoMap,
   buildInitialMapping,
@@ -6,6 +6,8 @@ export {
   reconcile,
   signature,
   parseQuantity,
+  leadingProductNumber,
+  unknownProductNumbers,
 } from './mapping';
 export { loadSavedMapping, saveMapping } from './mappingStore';
 export type {

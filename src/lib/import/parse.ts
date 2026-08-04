@@ -56,9 +56,19 @@ function parseCsv(file: File): Promise<ParsedTable> {
   });
 }
 
-async function parseExcel(file: File): Promise<ParsedTable> {
-  const buffer = await file.arrayBuffer();
-  const workbook = XLSX.read(buffer, { type: 'array' });
+/**
+ * Legge un workbook Excel già in memoria (primo foglio) e lo normalizza a
+ * colonne + righe di stringhe. Estratta da `parseExcel` per essere testabile
+ * senza l'API `File` (i test la chiamano con il buffer del foglio reale).
+ * `raw: false` forza i valori come testo formattato: così "00" resta "00" e le
+ * celle vuote/saltate diventano '' (poi lette come 0 a valle).
+ */
+export function tableFromWorkbookBuffer(
+  buffer: ArrayBuffer | Uint8Array,
+  fileName: string,
+): ParsedTable {
+  const data = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  const workbook = XLSX.read(data, { type: 'array' });
   const firstSheet = workbook.SheetNames[0];
   const sheet = firstSheet ? workbook.Sheets[firstSheet] : undefined;
   if (!sheet) throw new Error('Il foglio Excel è vuoto.');
@@ -68,5 +78,10 @@ async function parseExcel(file: File): Promise<ParsedTable> {
     defval: '',
     blankrows: false,
   });
-  return toTable(matrix as unknown as string[][], file.name);
+  return toTable(matrix as unknown as string[][], fileName);
+}
+
+async function parseExcel(file: File): Promise<ParsedTable> {
+  const buffer = await file.arrayBuffer();
+  return tableFromWorkbookBuffer(buffer, file.name);
 }

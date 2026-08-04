@@ -16,7 +16,7 @@ function roleToValue(r: ColumnRole): string {
 }
 
 function valueToRole(v: string): ColumnRole {
-  if (v === 'name' || v === 'phone' || v === 'ignore') return { kind: v };
+  if (v === 'name' || v === 'phone' || v === 'email' || v === 'ignore') return { kind: v };
   if (v.startsWith('product:')) return { kind: 'product', number: Number(v.slice('product:'.length)) };
   return { kind: 'ignore' };
 }
@@ -39,19 +39,24 @@ export function ImportColumnMapper({ table, mapping, catalog, onChange }: Import
     onChange(next);
   };
 
+  const catalogNumbers = useMemo(() => new Set(catalog.map((p) => p.number)), [catalog]);
+
   const summary = useMemo(() => {
     const nameCols = mapping.filter((r) => r.kind === 'name').length;
     const phoneCols = mapping.filter((r) => r.kind === 'phone').length;
+    const emailCols = mapping.filter((r) => r.kind === 'email').length;
     const productNumbers = mapping.flatMap((r) => (r.kind === 'product' ? [r.number] : []));
     const duplicated = productNumbers.length !== new Set(productNumbers).size;
-    return { nameCols, phoneCols, productCount: productNumbers.length, duplicated };
-  }, [mapping]);
+    const unknown = [...new Set(productNumbers.filter((n) => !catalogNumbers.has(n)))];
+    return { nameCols, phoneCols, emailCols, productCount: productNumbers.length, duplicated, unknown };
+  }, [mapping, catalogNumbers]);
 
   return (
     <div>
       <p className={styles.mapIntro}>
-        Indica il ruolo di ogni colonna. I prodotti vengono agganciati al catalogo (per numero o
-        nome svedese); i prezzi restano quelli di catalogo, non quelli del file.
+        Indica il ruolo di ogni colonna. I prodotti vengono agganciati al catalogo <strong>per
+        numero</strong> (l'intero iniziale dell'etichetta, es. «3. …»), non per nome; i prezzi
+        restano quelli di catalogo, non quelli del file.
       </p>
 
       <div className={styles.mapGrid}>
@@ -59,6 +64,7 @@ export function ImportColumnMapper({ table, mapping, catalog, onChange }: Import
           const role = mapping[idx] ?? { kind: 'ignore' };
           const samples = samplesOf(table, idx);
           const isProduct = role.kind === 'product';
+          const unknownProduct = role.kind === 'product' && !catalogNumbers.has(role.number);
           return (
             <div
               key={idx}
@@ -71,6 +77,9 @@ export function ImportColumnMapper({ table, mapping, catalog, onChange }: Import
                 {col || `Colonna ${idx + 1}`}
               </div>
               <div className={styles.mapSamples}>
+                {unknownProduct && (
+                  <Chip tone="unpaid">N° {role.number} non in catalogo</Chip>
+                )}{' '}
                 {samples.length ? samples.join(' · ') : '—'}
               </div>
               <select
@@ -82,6 +91,7 @@ export function ImportColumnMapper({ table, mapping, catalog, onChange }: Import
                 <option value="ignore">Ignora</option>
                 <option value="name">Nome buyer</option>
                 <option value="phone">Telefono</option>
+                <option value="email">Email</option>
                 <optgroup label="Prodotto">
                   {catalog.map((p) => (
                     <option key={p.number} value={`product:${p.number}`}>
@@ -102,10 +112,18 @@ export function ImportColumnMapper({ table, mapping, catalog, onChange }: Import
         <Chip tone="neutral">
           {summary.phoneCols ? `Telefono: ${summary.phoneCols}` : 'Telefono: nessuno'}
         </Chip>
+        <Chip tone="neutral">
+          {summary.emailCols ? `Email: ${summary.emailCols}` : 'Email: nessuna'}
+        </Chip>
         <Chip tone={summary.productCount ? 'brass' : 'unpaid'}>
           {summary.productCount} prodotti mappati
         </Chip>
         {summary.duplicated && <Chip tone="unpaid">Prodotto mappato più volte</Chip>}
+        {summary.unknown.length > 0 && (
+          <Chip tone="unpaid">
+            N° non in catalogo: {summary.unknown.join(', ')}
+          </Chip>
+        )}
       </div>
     </div>
   );
