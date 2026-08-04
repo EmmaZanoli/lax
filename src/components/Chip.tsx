@@ -8,6 +8,7 @@ export type ChipTone =
   | 'pending' // bonifico atteso
   | 'received' // bonifico ricevuto
   | 'unpaid' // non pagato / allarme
+  | 'personal' // uso personale
   | 'brass'; // accento
 
 interface ChipProps {

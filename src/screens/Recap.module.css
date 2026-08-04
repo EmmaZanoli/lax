@@ -43,6 +43,9 @@
 .card[data-tone='unpaid'] {
   --tone: var(--unpaid);
 }
+.card[data-tone='personal'] {
+  --tone: var(--personal);
+}
 
 .cardValue {
   font-family: var(--font-serif);
@@ -57,6 +60,191 @@
   font-size: 12px;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* ============ Riconciliazione: uso personale + totale ordinato ============ */
+
+.recon {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.reconItem {
+  --tone: var(--personal);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-4);
+  text-align: left;
+  background: color-mix(in srgb, var(--tone) 7%, var(--panel));
+  border: 1px dashed color-mix(in srgb, var(--tone) 40%, var(--rule));
+  border-radius: var(--radius-md);
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease;
+}
+.reconItem[data-static='true'] {
+  --tone: var(--text-weak);
+}
+.reconItem:not([data-static='true']):hover {
+  background: color-mix(in srgb, var(--tone) 12%, var(--panel));
+}
+.reconItem[data-active='true'] {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--tone) 60%, var(--rule));
+}
+
+.reconValue {
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.reconCount {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- dettaglio per prodotto: ordinato totale incluso personale (fattura) --- */
+
+.reconDetail {
+  margin-bottom: var(--space-5);
+}
+
+.reconDetailToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    color 100ms ease,
+    border-color 100ms ease;
+}
+.reconDetailToggle:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--brass) 35%, var(--rule));
+}
+
+.reconChevron {
+  color: var(--text-weak);
+  font-size: 11px;
+}
+
+.reconDetailMeta {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-weak);
+  font-weight: 500;
+}
+
+.reconTableWrap {
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+}
+
+.reconDetailNote {
+  margin-bottom: var(--space-3);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.reconEmpty {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.reconTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.reconTable th,
+.reconTable td {
+  padding: 8px var(--space-3);
+  border-bottom: 1px solid var(--rule-soft);
+  text-align: left;
+}
+.reconTable thead th {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.reconTable tbody td {
+  font-size: 14px;
+}
+.reconTable tfoot th,
+.reconTable tfoot td {
+  border-bottom: none;
+  border-top: 1px solid var(--rule);
+  padding-top: 10px;
+  font-weight: 600;
+  color: var(--text);
+}
+.reconTable tfoot th {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.reconNumCol {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.reconTotalCol {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: var(--text);
+}
+
+.reconNumCol[data-personal='true'] {
+  color: var(--personal);
+  font-weight: 600;
+}
+
+.reconName {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+.reconWeight {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.reconHash {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-weak);
 }
 
 /* ============================ Filtri a pillola ============================ */
@@ -144,6 +332,9 @@
 }
 .dot[data-picked='true'] {
   background: var(--received);
+}
+.dot[data-kind='personal'] {
+  background: var(--personal);
 }
 
 .rowName {
@@ -367,6 +558,21 @@
 
 /* ============================ Drawer aggiunta ordine manuale ============================ */
 
+.addKindToggle {
+  margin-bottom: var(--space-4);
+}
+
+.addNote {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--personal) 10%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--personal) 35%, transparent);
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .addForm {
   display: flex;
   flex-direction: column;
@@ -491,6 +697,9 @@
 @media (max-width: 680px) {
   .cards {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .recon {
+    grid-template-columns: 1fr;
   }
   .row {
     grid-template-columns: auto 1fr auto;

@@ -1,6 +1,15 @@
 /** Stato di pagamento di un buyer. */
 export type PaymentStatus = 'none' | 'cash' | 'pending' | 'received';
 
+/**
+ * Tipo di ordine.
+ * - `customer`: cliente da servire al banco (default).
+ * - `personal`: merce che il seller tiene per sé. NON è un cliente da servire:
+ *   esce dai conteggi del giorno e dai bucket di denaro dei clienti, ma scala
+ *   comunque la giacenza e concorre al "Valore uso personale" del Recap.
+ */
+export type OrderKind = 'customer' | 'personal';
+
 /** Prodotto del catalogo. Il `number` è la chiave stabile per l'aggancio col CSV. */
 export interface Product {
   number: number;
@@ -21,6 +30,8 @@ export interface Buyer {
   order: Record<number, number>; // numeroProdotto -> quantità
   pickedUp: boolean;
   payment: PaymentStatus;
+  /** Tipo di ordine (default 'customer'). Vedi OrderKind. */
+  kind: OrderKind;
 }
 
 /** Stato applicativo persistito. */

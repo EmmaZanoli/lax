@@ -7,8 +7,11 @@ import {
   totals,
   orderTotal,
   orderPieces,
+  orderedTotals,
   formatEuro,
   isBalanced,
+  isPersonal,
+  isCustomer,
   downloadRecap,
   downloadBackup,
   lastName,
@@ -27,15 +30,25 @@ import { RecapOrderDrawer } from './RecapOrderDrawer';
 import { RecapAddDrawer } from './RecapAddDrawer';
 import styles from './Recap.module.css';
 
-type FilterKey = 'to-pick' | 'to-pay' | 'cash' | 'pending' | 'received' | 'ritirati' | 'all';
+type FilterKey =
+  | 'to-pick'
+  | 'to-pay'
+  | 'cash'
+  | 'pending'
+  | 'received'
+  | 'ritirati'
+  | 'personal'
+  | 'all';
 
+// I filtri clienti escludono sempre gli ordini per uso personale.
 const PREDS: Record<FilterKey, (b: Buyer) => boolean> = {
-  'to-pick': (b) => !b.pickedUp,
-  'to-pay': (b) => b.pickedUp && b.payment === 'none',
-  cash: (b) => b.pickedUp && b.payment === 'cash',
-  pending: (b) => b.pickedUp && b.payment === 'pending',
-  received: (b) => b.pickedUp && b.payment === 'received',
-  ritirati: (b) => b.pickedUp,
+  'to-pick': (b) => isCustomer(b) && !b.pickedUp,
+  'to-pay': (b) => isCustomer(b) && b.pickedUp && b.payment === 'none',
+  cash: (b) => isCustomer(b) && b.pickedUp && b.payment === 'cash',
+  pending: (b) => isCustomer(b) && b.pickedUp && b.payment === 'pending',
+  received: (b) => isCustomer(b) && b.pickedUp && b.payment === 'received',
+  ritirati: (b) => isCustomer(b) && b.pickedUp,
+  personal: (b) => isPersonal(b),
   all: () => true,
 };
 
@@ -46,10 +59,12 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'pending', label: 'Bonifico atteso' },
   { key: 'received', label: 'Bonifico ricevuto' },
   { key: 'ritirati', label: 'Ritirati' },
+  { key: 'personal', label: 'Uso personale' },
   { key: 'all', label: 'Tutti' },
 ];
 
 function statusChip(b: Buyer) {
+  if (isPersonal(b)) return <Chip tone="personal">Uso personale</Chip>;
   if (!b.pickedUp) return <Chip tone="unpaid">Da ritirare</Chip>;
   switch (b.payment) {
     case 'cash':
@@ -74,11 +89,19 @@ export function Recap() {
   const [filter, setFilter] = useState<FilterKey>('to-pick');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [reconOpen, setReconOpen] = useState(false);
   const lastIdRef = useRef<string | null>(null);
   if (selectedId) lastIdRef.current = selectedId;
 
   const t = useMemo(() => totals({ catalog, buyers }), [catalog, buyers]);
   const balanced = useMemo(() => isBalanced({ catalog, buyers }), [catalog, buyers]);
+
+  // Ordinato totale incluso l'uso personale — solo per riconciliare la fattura fornitore.
+  const ordered = useMemo(() => orderedTotals({ catalog, buyers }), [catalog, buyers]);
+  const productByNumber = useMemo(
+    () => new Map(catalog.map((p) => [p.number, p])),
+    [catalog],
+  );
 
   const counts = useMemo(() => {
     const c = {} as Record<FilterKey, number>;
@@ -166,6 +189,120 @@ export function Recap() {
             ))}
           </div>
 
+          {/* Voci fuori dai conti dei clienti: uso personale + riconciliazione fattura. */}
+          <div className={styles.recon}>
+            <button
+              type="button"
+              className={styles.reconItem}
+              data-tone="personal"
+              data-active={filter === 'personal'}
+              onClick={() => setFilter('personal')}
+            >
+              <span className="label">Valore uso personale</span>
+              <span className={styles.reconValue}>{formatEuro(t.personal)}</span>
+              <span className={styles.reconCount}>
+                {t.personalCount} {t.personalCount === 1 ? 'ordine' : 'ordini'}
+              </span>
+            </button>
+            <div className={styles.reconItem} data-static="true">
+              <span className="label">Totale ordinato · clienti + personale</span>
+              <span className={styles.reconValue}>{formatEuro(t.orderedTotal)}</span>
+              <span className={styles.reconCount}>per riconciliare la fattura</span>
+            </div>
+          </div>
+
+          {/* Dettaglio per prodotto dell'ordinato TOTALE (incluso uso personale).
+              Solo per riconciliare la fattura del fornitore: non è un dato di magazzino. */}
+          <div className={styles.reconDetail}>
+            <button
+              type="button"
+              className={styles.reconDetailToggle}
+              onClick={() => setReconOpen((v) => !v)}
+              aria-expanded={reconOpen}
+            >
+              <span className={styles.reconChevron} aria-hidden="true">
+                {reconOpen ? '▾' : '▸'}
+              </span>
+              Ordinato totale per prodotto · incluso uso personale
+              <span className={styles.reconDetailMeta}>
+                {ordered.totalPieces} pezzi · {formatEuro(ordered.totalValue)}
+              </span>
+            </button>
+
+            {reconOpen && (
+              <div className={styles.reconTableWrap}>
+                <p className={styles.reconDetailNote}>
+                  Include i pezzi per uso personale ({ordered.personalPieces}), che il fornitore
+                  fattura ma che <strong>non</strong> entrano nella giacenza del Magazzino
+                  (solo clienti). Dato a fini di riconciliazione: non incide su residuo, ammanchi
+                  o cassa.
+                </p>
+                {ordered.rows.length === 0 ? (
+                  <p className={styles.reconEmpty}>Nessun prodotto ordinato.</p>
+                ) : (
+                  <table className={styles.reconTable}>
+                    <thead>
+                      <tr>
+                        <th scope="col">Prodotto</th>
+                        <th scope="col" className={styles.reconNumCol}>
+                          Clienti
+                        </th>
+                        <th scope="col" className={styles.reconNumCol}>
+                          Personale
+                        </th>
+                        <th scope="col" className={styles.reconNumCol}>
+                          Totale
+                        </th>
+                        <th scope="col" className={styles.reconNumCol}>
+                          Valore
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ordered.rows.map((r) => {
+                        const p = productByNumber.get(r.number);
+                        return (
+                          <tr key={r.number}>
+                            <td>
+                              <span className={styles.reconName}>
+                                {p?.nameSv ?? `#${r.number}`}
+                                {p?.weight && (
+                                  <span className={styles.reconWeight}> · {p.weight}</span>
+                                )}
+                                <span className={styles.reconHash}>#{r.number}</span>
+                              </span>
+                            </td>
+                            <td className={styles.reconNumCol}>{r.customer}</td>
+                            <td className={styles.reconNumCol} data-personal={r.personal > 0}>
+                              {r.personal || '—'}
+                            </td>
+                            <td className={`${styles.reconNumCol} ${styles.reconTotalCol}`}>
+                              {r.total}
+                            </td>
+                            <td className={styles.reconNumCol}>{formatEuro(r.value)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th scope="row">Totale</th>
+                        <td className={styles.reconNumCol}>
+                          {ordered.totalPieces - ordered.personalPieces}
+                        </td>
+                        <td className={styles.reconNumCol}>{ordered.personalPieces || '—'}</td>
+                        <td className={`${styles.reconNumCol} ${styles.reconTotalCol}`}>
+                          {ordered.totalPieces}
+                        </td>
+                        <td className={styles.reconNumCol}>{formatEuro(ordered.totalValue)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className={styles.filters} role="group" aria-label="Filtri">
             {FILTERS.map((f) => (
               <button
@@ -197,6 +334,7 @@ export function Recap() {
                     <span
                       className={styles.dot}
                       data-picked={b.pickedUp}
+                      data-kind={b.kind}
                       aria-hidden="true"
                     />
                     <span className={styles.rowName}>{b.name}</span>

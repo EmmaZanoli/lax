@@ -29,6 +29,7 @@
   --pending: #82a6bb; /* bonifico atteso */
   --received: #95b389; /* bonifico ricevuto */
   --unpaid: #d08869; /* non pagato / allarme */
+  --personal: #a091b3; /* uso personale (fuori dai conti del giorno) */
 
   /* tipografia */
   --font-serif: 'Fraunces Variable', Georgia, 'Times New Roman', serif;

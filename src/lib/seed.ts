@@ -13,6 +13,7 @@ export const seedBuyers: Buyer[] = [
     order: { 1: 1, 5: 1, 9: 2 },
     pickedUp: true,
     payment: 'cash',
+    kind: 'customer',
   },
   {
     id: 'b2',
@@ -21,6 +22,7 @@ export const seedBuyers: Buyer[] = [
     order: { 2: 2, 10: 1 },
     pickedUp: true,
     payment: 'received',
+    kind: 'customer',
   },
   {
     id: 'b3',
@@ -29,6 +31,7 @@ export const seedBuyers: Buyer[] = [
     order: { 3: 1, 7: 1 },
     pickedUp: false,
     payment: 'none',
+    kind: 'customer',
   },
   {
     id: 'b4',
@@ -36,6 +39,7 @@ export const seedBuyers: Buyer[] = [
     order: { 4: 2, 11: 2 },
     pickedUp: true,
     payment: 'pending',
+    kind: 'customer',
   },
   {
     id: 'b5',
@@ -44,6 +48,7 @@ export const seedBuyers: Buyer[] = [
     order: { 1: 1, 8: 1, 12: 3 },
     pickedUp: true,
     payment: 'none',
+    kind: 'customer',
   },
   {
     id: 'b6',
@@ -51,6 +56,7 @@ export const seedBuyers: Buyer[] = [
     order: { 6: 2, 9: 2 },
     pickedUp: false,
     payment: 'none',
+    kind: 'customer',
   },
   {
     id: 'b7',
@@ -59,6 +65,7 @@ export const seedBuyers: Buyer[] = [
     order: { 1: 2, 12: 2 },
     pickedUp: true,
     payment: 'cash',
+    kind: 'customer',
   },
   {
     id: 'b8',
@@ -67,6 +74,7 @@ export const seedBuyers: Buyer[] = [
     order: { 2: 1, 10: 2, 12: 2 },
     pickedUp: false,
     payment: 'none',
+    kind: 'customer',
   },
   {
     id: 'b9',
@@ -74,6 +82,7 @@ export const seedBuyers: Buyer[] = [
     order: { 5: 1, 9: 3 },
     pickedUp: true,
     payment: 'received',
+    kind: 'customer',
   },
   {
     id: 'b10',
@@ -82,6 +91,17 @@ export const seedBuyers: Buyer[] = [
     order: { 3: 1, 11: 2 },
     pickedUp: true,
     payment: 'pending',
+    kind: 'customer',
+  },
+  // Ordine per uso personale del seller: fuori dai conti del giorno, ma scala la
+  // giacenza. Serve a testare il "Valore uso personale" e la vista Magazzino.
+  {
+    id: 'b11',
+    name: 'Uso personale',
+    order: { 9: 2, 12: 1 },
+    pickedUp: false,
+    payment: 'none',
+    kind: 'personal',
   },
 ];
 

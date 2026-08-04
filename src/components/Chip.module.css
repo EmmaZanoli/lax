@@ -43,6 +43,9 @@
 .chip[data-tone='unpaid'] {
   --chip: var(--unpaid);
 }
+.chip[data-tone='personal'] {
+  --chip: var(--personal);
+}
 .chip[data-tone='brass'] {
   --chip: var(--brass);
 }

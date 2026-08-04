@@ -36,6 +36,7 @@ export const semantic = {
   pending: '#82a6bb', // bonifico atteso (blu acciaio)
   received: '#95b389', // bonifico ricevuto (verde salvia)
   unpaid: '#d08869', // non pagato / allarme (terracotta)
+  personal: '#a091b3', // uso personale (fuori dai conti del giorno)
 } as const;
 
 export const font = {

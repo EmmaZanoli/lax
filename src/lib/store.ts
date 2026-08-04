@@ -154,8 +154,16 @@ export const useStore = create<StoreState>()(
     },
     {
       name: STORAGE_KEY,
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => idbStorage),
+      // v1 → v2: i buyer non avevano `kind`; sono tutti clienti.
+      migrate: (persisted, version) => {
+        const s = persisted as Partial<AppState>;
+        if (version < 2 && s?.buyers) {
+          s.buyers = s.buyers.map((b) => ({ ...b, kind: b.kind ?? 'customer' }));
+        }
+        return s;
+      },
       // Persistiamo solo i dati, non l'undo né i flag di runtime.
       partialize: (s) => ({
         catalog: s.catalog,

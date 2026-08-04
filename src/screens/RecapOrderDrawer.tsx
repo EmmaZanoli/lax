@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { PaymentStatus } from '../lib';
-import { useStore, orderTotal, formatEuro } from '../lib';
-import { Button, useToast } from '../components';
+import { useStore, orderTotal, formatEuro, isPersonal } from '../lib';
+import { Button, Chip, useToast } from '../components';
 import { BancoChangeDialog } from './BancoChangeDialog';
 import styles from './Recap.module.css';
 
@@ -49,6 +49,7 @@ export function RecapOrderDrawer({ id }: { id: string }) {
 
   if (!buyer) return null;
 
+  const personal = isPersonal(buyer);
   const activePayment: PaymentStatus | null = buyer.pickedUp ? buyer.payment : null;
 
   const togglePickup = (value: boolean) => {
@@ -68,7 +69,11 @@ export function RecapOrderDrawer({ id }: { id: string }) {
     <div>
       <div className={styles.dHead}>
         <h3 className={styles.dName}>{buyer.name}</h3>
-        {buyer.phone && <span className={styles.dPhone}>{buyer.phone}</span>}
+        {personal ? (
+          <Chip tone="personal">Uso personale</Chip>
+        ) : (
+          buyer.phone && <span className={styles.dPhone}>{buyer.phone}</span>
+        )}
       </div>
 
       <ul className={styles.dOrder}>
@@ -88,56 +93,65 @@ export function RecapOrderDrawer({ id }: { id: string }) {
       </ul>
 
       <div className={styles.dDue}>
-        <span className="label">Totale ordine</span>
+        <span className="label">{personal ? 'Valore uso personale' : 'Totale ordine'}</span>
         <span className={styles.dDueValue}>{formatEuro(total)}</span>
       </div>
 
-      <h4 className={styles.dSection}>Ritiro</h4>
-      <div className={styles.pickToggle} role="group" aria-label="Stato ritiro">
-        <button
-          type="button"
-          className={styles.pickBtn}
-          data-active={!buyer.pickedUp}
-          onClick={() => togglePickup(false)}
-        >
-          Da ritirare
-        </button>
-        <button
-          type="button"
-          className={styles.pickBtn}
-          data-active={buyer.pickedUp}
-          onClick={() => togglePickup(true)}
-        >
-          Ritirato
-        </button>
-      </div>
+      {personal ? (
+        <p className={styles.addNote}>
+          Merce per uso personale del seller: non entra nella coda ritiri, nei bucket di denaro
+          dei clienti né nella quadratura. Scala comunque la giacenza nel Magazzino.
+        </p>
+      ) : (
+        <>
+          <h4 className={styles.dSection}>Ritiro</h4>
+          <div className={styles.pickToggle} role="group" aria-label="Stato ritiro">
+            <button
+              type="button"
+              className={styles.pickBtn}
+              data-active={!buyer.pickedUp}
+              onClick={() => togglePickup(false)}
+            >
+              Da ritirare
+            </button>
+            <button
+              type="button"
+              className={styles.pickBtn}
+              data-active={buyer.pickedUp}
+              onClick={() => togglePickup(true)}
+            >
+              Ritirato
+            </button>
+          </div>
 
-      <h4 className={styles.dSection}>Pagamento</h4>
-      <div className={styles.payGrid}>
-        {PAYMENTS.map((p) => (
-          <button
-            key={p.mode}
-            type="button"
-            className={styles.payBtn}
-            data-tone={p.tone}
-            data-selected={activePayment === p.mode}
-            aria-pressed={activePayment === p.mode}
-            onClick={() => choosePayment(p.mode)}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+          <h4 className={styles.dSection}>Pagamento</h4>
+          <div className={styles.payGrid}>
+            {PAYMENTS.map((p) => (
+              <button
+                key={p.mode}
+                type="button"
+                className={styles.payBtn}
+                data-tone={p.tone}
+                data-selected={activePayment === p.mode}
+                aria-pressed={activePayment === p.mode}
+                onClick={() => choosePayment(p.mode)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
 
-      {activePayment === 'cash' && (
-        <div className={styles.changeRow}>
-          <Button variant="secondary" onClick={() => setChangeOpen(true)}>
-            Calcola resto
-          </Button>
-        </div>
+          {activePayment === 'cash' && (
+            <div className={styles.changeRow}>
+              <Button variant="secondary" onClick={() => setChangeOpen(true)}>
+                Calcola resto
+              </Button>
+            </div>
+          )}
+
+          {changeOpen && <BancoChangeDialog total={total} onClose={() => setChangeOpen(false)} />}
+        </>
       )}
-
-      {changeOpen && <BancoChangeDialog total={total} onClose={() => setChangeOpen(false)} />}
     </div>
   );
 }

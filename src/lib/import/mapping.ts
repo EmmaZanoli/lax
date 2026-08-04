@@ -176,6 +176,7 @@ export function buildDrafts(
         order,
         pickedUp: false,
         payment: 'none',
+        kind: 'customer',
       },
       total,
       pieces,
