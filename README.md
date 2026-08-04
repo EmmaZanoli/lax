@@ -56,6 +56,40 @@ Per provare il funzionamento offline: `npm run build && npm run preview`, apri l
 
 ---
 
+## Il giorno della distribuzione
+
+**Non usare `npm run dev`.** Il giorno del ritiro va usata una **build di produzione servita in locale**:
+
+```bash
+npm run build     # una volta, in anticipo (non durante la giornata)
+npm run preview   # avvia il server locale e lascialo aperto tutto il giorno
+```
+
+Gira **tutto in locale**: né `build` né `preview` richiedono Internet (le dipendenze sono già installate).
+
+**Perché non `npm run dev`:**
+
+- **Carica i dati di esempio (seed).** In sviluppo, con lo store vuoto, partono buyer e giacenze finti. La build di produzione parte pulita: importi l'Excel vero e inserisci le giacenze reali.
+- **Niente offline.** Il service worker PWA (precache + funzionamento senza rete) è generato **solo nella build**; in `dev` non c'è.
+
+> ### ⚠️ Usa sempre la stessa origine (porta + browser)
+>
+> Lo stato è salvato su **IndexedDB, legato all'origine** (schema + host + **porta**) e al profilo del browser. Le due modalità usano porte diverse — `dev` → `localhost:5173`, `preview` → `localhost:4173` — quindi **i dati di una porta non si vedono nell'altra**.
+>
+> Scegli **un solo comando, una sola porta, un solo browser/profilo** e usa sempre quello: dalla prova generale fino all'ultimo bonifico spuntato nei giorni successivi. Cambiare comando o browser a metà fa "sparire" i dati (sono sotto un'altra origine).
+
+**Checklist pre-giornata** (da fare qualche giorno prima, sulla **stessa macchina/porta/browser** che userai il giorno del ritiro):
+
+1. `npm run build` — rifallo solo se cambi codice o `public/catalog.json`, **mai** durante la giornata.
+2. `npm run preview` e apri `http://localhost:4173`.
+3. **Prova generale:** importa l'Excel reale e verifica i conteggi in anteprima; inserisci le **giacenze iniziali** da **Prodotti → Gestione catalogo** (è l'unico punto per farlo).
+4. **Ricarica un paio di volte:** buyer e giacenze devono restare (verifica la persistenza *prima* del giorno).
+5. *Facoltativo ma consigliato:* **installa la PWA** (icona nella barra degli indirizzi) per aprirla come app a sé, che si regge sulla cache anche se chiudi il terminale.
+
+**Durante la giornata:** lascia `preview` in esecuzione (o usa la PWA installata); non svuotare i dati del sito / la cache; non cambiare browser o profilo; non rifare la build.
+
+---
+
 ## Le cinque schermate
 
 | Rotta | Nome | Ruolo |
