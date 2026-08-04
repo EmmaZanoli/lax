@@ -2,12 +2,18 @@ import { get as idbGet } from 'idb-keyval';
 import { STORAGE_KEY, useStore } from './store';
 import { fetchCatalog } from './catalog';
 import { seedBuyers, seedStocks } from './seed';
+import { resolveBootstrap } from './bootstrapPlan';
 
 /**
  * Avvio dell'app: reidrata lo stato da IndexedDB PRIMA del primo render
- * (niente flash di stato vuoto). Se non c'è catalogo, lo carica da
- * /catalog.json. Solo in sviluppo e solo al primissimo avvio carica anche i
- * buyer di esempio.
+ * (niente flash di stato vuoto), poi decide (in modo puro, vedi
+ * `resolveBootstrap`) se caricare il catalogo di default / il seed di sviluppo
+ * o lasciare intatto lo stato persistito.
+ *
+ * Il catalogo PERSISTITO è la fonte autorevole: contiene la giacenza iniziale
+ * inserita dall'utente e non va mai sovrascritto da /catalog.json a ogni avvio
+ * (altrimenti la giacenza tornerebbe a 0). Lo stato deve sopravvivere a
+ * chiusura/refresh; la sostituzione del catalogo è deliberata (schermata Prodotti).
  */
 export async function bootstrap(): Promise<void> {
   let firstRun = false;
@@ -21,28 +27,23 @@ export async function bootstrap(): Promise<void> {
   useStore.getState()._setHydrated(true);
 
   const s = useStore.getState();
-  const catalog = await fetchCatalog();
-  if (catalog.length === 0) return;
+  const fetched = await fetchCatalog();
 
-  // In dev: se i numeri di prodotto sono cambiati rispetto allo stato persistito,
-  // ricarica anche i buyer di esempio per evitare ordini con chiavi inesistenti.
-  const oldNumbers = new Set(s.catalog.map((p) => p.number));
-  const catalogChanged = catalog.some((p) => !oldNumbers.has(p.number));
+  const plan = resolveBootstrap({
+    isDev: import.meta.env.DEV,
+    firstRun,
+    persisted: { catalog: s.catalog, buyers: s.buyers, importedAt: s.importedAt },
+    fetched,
+    seedBuyers,
+    seedStocks,
+    now: new Date().toISOString(),
+  });
 
-  if (import.meta.env.DEV && (firstRun || catalogChanged)) {
-    const catalogWithStock = catalog.map((p) =>
-      seedStocks[p.number] !== undefined ? { ...p, initialStock: seedStocks[p.number] } : p,
-    );
+  if (plan.action === 'replace') {
     useStore.getState()._replaceAll({
-      catalog: catalogWithStock,
-      buyers: seedBuyers,
-      importedAt: new Date().toISOString(),
-    });
-  } else {
-    useStore.getState()._replaceAll({
-      catalog,
-      buyers: s.buyers,
-      importedAt: s.importedAt,
+      catalog: plan.catalog,
+      buyers: plan.buyers,
+      importedAt: plan.importedAt,
     });
   }
 }
