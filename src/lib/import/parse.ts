@@ -1,6 +1,9 @@
-import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
 import type { ParsedTable } from './types';
+
+// NB: `papaparse` e soprattutto `xlsx` (SheetJS) sono librerie pesanti ma servono
+// SOLO durante l'import. Vengono caricate con import() dinamico, così finiscono
+// in chunk a parte (precache-ati dal service worker, quindi disponibili offline)
+// e non appesantiscono il bundle principale caricato da ogni schermata.
 
 /** Normalizza una cella a stringa pulita (togliendo BOM e spazi). */
 function cell(value: unknown): string {
@@ -39,7 +42,8 @@ function toTable(matrix: string[][], fileName: string): ParsedTable {
   return { columns, rows, fileName };
 }
 
-function parseCsv(file: File): Promise<ParsedTable> {
+async function parseCsv(file: File): Promise<ParsedTable> {
+  const { default: Papa } = await import('papaparse');
   return new Promise((resolve, reject) => {
     Papa.parse<string[]>(file, {
       skipEmptyLines: 'greedy',
@@ -62,11 +66,13 @@ function parseCsv(file: File): Promise<ParsedTable> {
  * senza l'API `File` (i test la chiamano con il buffer del foglio reale).
  * `raw: false` forza i valori come testo formattato: così "00" resta "00" e le
  * celle vuote/saltate diventano '' (poi lette come 0 a valle).
+ * È async perché `xlsx` viene importato dinamicamente (vedi nota in testa).
  */
-export function tableFromWorkbookBuffer(
+export async function tableFromWorkbookBuffer(
   buffer: ArrayBuffer | Uint8Array,
   fileName: string,
-): ParsedTable {
+): Promise<ParsedTable> {
+  const XLSX = await import('xlsx');
   const data = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   const workbook = XLSX.read(data, { type: 'array' });
   const firstSheet = workbook.SheetNames[0];
