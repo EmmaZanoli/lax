@@ -21,6 +21,7 @@ Thumbs.db
 
 # Claude
 CLAUDE.md
+prompts/*.md
 
 # -------------------------------------------------------
 # DATI SENSIBILI — non committare mai questi file
