@@ -59,7 +59,6 @@ export function Backup() {
     if (parsed.version > 1) {
       toast.show(
         `Backup versione ${parsed.version}: potrebbe contenere dati non completamente gestiti.`,
-        'pending',
       );
     }
 
