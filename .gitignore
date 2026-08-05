@@ -44,3 +44,5 @@ lax-recap*.csv
 # qualsiasi file JSON nella root che non sia configurazione
 # (es. backup scaricati e poi spostati per sbaglio nel repo)
 /lax-*.json
+
+lax-guida-seller.pdf
