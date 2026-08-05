@@ -231,6 +231,19 @@ export function Sidebar() {
           (prodotti, prezzi e giacenze). Usalo per ricominciare da un nuovo import.
         </ConfirmDialog>
       )}
+
+      {import.meta.env.DEV && (
+        <button
+          type="button"
+          className={styles.devReset}
+          onClick={async () => {
+            await useStore.persist.clearStorage();
+            window.location.reload();
+          }}
+        >
+          [dev] azzera tutto
+        </button>
+      )}
     </aside>
   );
 }
