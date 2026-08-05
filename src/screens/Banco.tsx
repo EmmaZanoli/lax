@@ -44,7 +44,10 @@ export function Banco() {
     () =>
       buyers
         .filter((b) => isCustomer(b) && !b.pickedUp)
-        .sort((a, b) => lastName(a.name).localeCompare(lastName(b.name), 'it')),
+        .sort((a, b) => {
+          const cmp = lastName(a.name).localeCompare(lastName(b.name), 'it');
+          return cmp !== 0 ? cmp : a.name.localeCompare(b.name, 'it');
+        }),
     [buyers],
   );
 
@@ -117,7 +120,7 @@ export function Banco() {
           <EmptyState
             glyph="✓"
             title="Nessuno da servire"
-            description="Tutti i buyer hanno ritirato. Puoi seguire i pagamenti dal Recap ordini."
+            description="Tutti i buyer hanno ritirato. Puoi seguire i pagamenti dagli Ordini."
           >
             <Button variant="secondary" onClick={() => navigate('/recap')}>
               Vai al Recap

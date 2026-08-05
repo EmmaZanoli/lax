@@ -18,7 +18,7 @@ const setupNav: NavItem[] = [{ to: '/import', label: 'Import' }];
 const sectionNav: NavItem[] = [
   { to: '/banco', label: 'Banco' },
   { to: '/magazzino', label: 'Magazzino' },
-  { to: '/recap', label: 'Recap ordini' },
+  { to: '/recap', label: 'Ordini' },
   { to: '/prodotti', label: 'Prodotti' },
 ];
 
