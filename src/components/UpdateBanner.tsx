@@ -11,7 +11,13 @@ export function UpdateBanner() {
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
-  } = useRegisterSW();
+  } = useRegisterSW({
+    onRegistered(registration) {
+      if (!registration) return;
+      // Controlla aggiornamenti ogni 10 minuti mentre l'app è aperta
+      setInterval(() => void registration.update(), 10 * 60 * 1000);
+    },
+  });
 
   if (!needRefresh) return null;
 
