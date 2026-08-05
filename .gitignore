@@ -39,10 +39,12 @@ public/catalog.json
 
 # backup e recap esportati dall'app (contengono dati buyer)
 lax-backup*.json
+backup-lax-*.json
 lax-recap*.csv
 
 # qualsiasi file JSON nella root che non sia configurazione
 # (es. backup scaricati e poi spostati per sbaglio nel repo)
 /lax-*.json
+/backup-lax-*.json
 
 lax-guida-seller.pdf

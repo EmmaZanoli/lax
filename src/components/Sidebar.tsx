@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { useStore, stockStatus, downloadRecap, downloadBackup, isCustomer } from '../lib';
+import { useStore, stockStatus, downloadRecap, isCustomer } from '../lib';
 import { useToast } from './Toast';
 import { ConfirmDialog } from './ConfirmDialog';
 import styles from './Sidebar.module.css';
@@ -94,6 +94,7 @@ const sectionNav: NavItem[] = [
   { to: '/magazzino', label: 'Magazzino' },
   { to: '/recap', label: 'Ordini' },
   { to: '/prodotti', label: 'Prodotti' },
+  { to: '/backup', label: 'Backup' },
 ];
 
 function itemClass({ isActive }: { isActive: boolean }) {
@@ -134,10 +135,6 @@ export function Sidebar() {
   const handleExport = () => {
     downloadRecap(useStore.getState());
     toast.show('Recap esportato', 'brass');
-  };
-  const handleBackup = () => {
-    downloadBackup(useStore.getState());
-    toast.show('Backup scaricato', 'brass');
   };
   const handleReset = () => {
     resetDay();
@@ -197,9 +194,6 @@ export function Sidebar() {
 <div className={styles.tools}>
         <button type="button" className={styles.toolBtn} onClick={handleExport}>
           Esporta recap
-        </button>
-        <button type="button" className={styles.toolBtn} onClick={handleBackup}>
-          Backup
         </button>
       </div>
 

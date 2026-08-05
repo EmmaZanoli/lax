@@ -18,26 +18,26 @@ export function isBalanced(state: AppState): boolean {
   return Math.abs(pickedOrders - pickedUpValue(t)) < 0.005;
 }
 
-/** Backup completo dello stato in JSON. */
+/** Backup completo dello stato in JSON (formato v1: top-level catalog + buyers). */
 export function backupJson(state: AppState): string {
   return JSON.stringify(
     {
       app: 'lax',
+      type: 'backup',
       version: 1,
-      exportedAt: new Date().toISOString(),
-      state: {
-        catalog: state.catalog,
-        buyers: state.buyers,
-        importedAt: state.importedAt,
-      },
+      savedAt: new Date().toISOString(),
+      catalog: state.catalog,
+      buyers: state.buyers,
     },
     null,
     2,
   );
 }
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
+function nowStamp(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
 }
 
 function downloadText(filename: string, text: string, mime: string, bom = false): void {
@@ -54,5 +54,5 @@ function downloadText(filename: string, text: string, mime: string, bom = false)
 }
 
 export function downloadBackup(state: AppState): void {
-  downloadText(`lax-backup-${today()}.json`, backupJson(state), 'application/json');
+  downloadText(`backup-lax-${nowStamp()}.json`, backupJson(state), 'application/json');
 }

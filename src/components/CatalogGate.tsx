@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useStore, parseCatalog } from '../lib';
 import { Button } from './Button';
 import { EmptyState } from './EmptyState';
@@ -12,8 +12,10 @@ export function CatalogGate() {
   const loadCatalog = useStore((s) => s.loadCatalog);
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
+  const location = useLocation();
 
-  if (!hydrated || catalogLen > 0) return <Outlet />;
+  // /backup è il percorso di recupero da disastro: funziona anche senza catalogo.
+  if (!hydrated || catalogLen > 0 || location.pathname === '/backup') return <Outlet />;
 
   const onFile = async (file: File) => {
     try {
@@ -47,6 +49,9 @@ export function CatalogGate() {
         <Button variant="primary" onClick={() => fileRef.current?.click()}>
           Carica catalogo…
         </Button>
+        <Link to="/backup" style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
+          oppure ripristina da un backup
+        </Link>
       </EmptyState>
     </Panel>
   );

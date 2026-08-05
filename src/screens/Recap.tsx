@@ -12,8 +12,6 @@ import {
   isBalanced,
   isPersonal,
   isCustomer,
-  downloadRecap,
-  downloadBackup,
   lastName,
 } from '../lib';
 import {
@@ -23,7 +21,6 @@ import {
   EmptyState,
   Panel,
   ScreenHeader,
-  useToast,
   type ChipTone,
 } from '../components';
 import { RecapOrderDrawer } from './RecapOrderDrawer';
@@ -80,7 +77,6 @@ function statusChip(b: Buyer) {
 
 export function Recap() {
   const navigate = useNavigate();
-  const toast = useToast();
 
   const { buyers, catalog } = useStore(
     useShallow((s) => ({ buyers: s.buyers, catalog: s.catalog })),
@@ -125,15 +121,6 @@ export function Recap() {
     { key: 'to-pick', label: 'Devono ritirare', value: t.toPickValue, count: t.toPickCount, tone: 'unpaid' },
   ];
 
-  const onExport = async () => {
-    await downloadRecap(useStore.getState());
-    toast.show('Recap esportato', 'brass');
-  };
-  const onBackup = () => {
-    downloadBackup(useStore.getState());
-    toast.show('Backup scaricato', 'brass');
-  };
-
   return (
     <>
       <ScreenHeader
@@ -146,12 +133,6 @@ export function Recap() {
             </Chip>
             <Button variant="secondary" onClick={() => setAddOpen(true)}>
               Aggiungi ordine
-            </Button>
-            <Button variant="secondary" onClick={onExport} disabled={buyers.length === 0}>
-              Esporta recap
-            </Button>
-            <Button variant="secondary" onClick={onBackup}>
-              Backup
             </Button>
           </>
         }
