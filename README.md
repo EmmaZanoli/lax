@@ -8,6 +8,33 @@ Un *seller* ha raccolto ordini via Google Form; i *buyer* vengono di persona, ri
 
 ---
 
+## Deploy su GitHub Pages
+
+**App live:** https://emmzanoli.github.io/lax/
+
+Il deploy avviene **automaticamente a ogni push su `main`** tramite GitHub Actions
+(workflow in `.github/workflows/deploy.yml`).
+
+### Primo setup (una volta sola)
+
+1. Vai su **Settings → Pages** del repository su GitHub
+2. Sotto **Source**, seleziona **GitHub Actions**
+3. Salva
+
+Da quel momento ogni push su `main` ricostruisce e pubblica l'app.
+Puoi anche avviare un deploy manuale dalla tab **Actions → Deploy to GitHub Pages → Run workflow**.
+
+### Dati e privacy (repo pubblico)
+
+**Sul repository e sul sito pubblicato non finiscono mai dati personali.**
+I dati importati (nomi, telefoni, email dei buyer, ordini) vivono esclusivamente
+in IndexedDB nel browser di chi usa l'app e non lasciano mai il dispositivo.
+
+Il `.gitignore` esclude esplicitamente `ordine.xlsx`, `public/catalog.json`,
+`lax-backup*.json` e qualsiasi CSV — solo il codice è pubblico.
+
+---
+
 ## Caratteristiche
 
 - **Nessun backend, nessun login.** Tutto vive nel browser.

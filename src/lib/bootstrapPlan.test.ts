@@ -20,7 +20,7 @@ const buyer = (id: string): Buyer => ({
   kind: 'customer',
 });
 
-const base = (over: Partial<BootstrapInput>): BootstrapInput => ({
+const base = (over: Partial<BootstrapInput> = {}): BootstrapInput => ({
   persisted: { catalog: [], buyers: [], importedAt: undefined },
   fetched: [],
   ...over,

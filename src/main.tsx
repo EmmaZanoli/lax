@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 
 // Font self-hosted (nessun link a Google Fonts: l'app deve girare offline).
 import '@fontsource-variable/fraunces/standard.css'; // assi wght + opsz
@@ -22,11 +22,11 @@ if (!rootEl) throw new Error('Elemento #root non trovato');
 bootstrap().finally(() => {
   createRoot(rootEl).render(
     <StrictMode>
-      <BrowserRouter>
+      <HashRouter>
         <ToastProvider>
           <App />
         </ToastProvider>
-      </BrowserRouter>
+      </HashRouter>
     </StrictMode>,
   );
 });

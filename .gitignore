@@ -19,5 +19,24 @@ npm-debug.log*
 .idea/
 Thumbs.db
 
+# -------------------------------------------------------
+# DATI SENSIBILI — non committare mai questi file
+# (repo pubblico: sul repo finisce solo il codice)
+# -------------------------------------------------------
+
+# export Google Form con ordini dei buyer (nomi, telefoni, email)
 ordine.xlsx
+ordine.csv
+*.xlsx
+*.csv
+
+# catalog con dati reali (sostituisce la versione placeholder)
 public/catalog.json
+
+# backup e recap esportati dall'app (contengono dati buyer)
+lax-backup*.json
+lax-recap*.csv
+
+# qualsiasi file JSON nella root che non sia configurazione
+# (es. backup scaricati e poi spostati per sbaglio nel repo)
+/lax-*.json

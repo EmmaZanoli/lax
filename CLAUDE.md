@@ -128,3 +128,14 @@ seller · buyer · ordine · ritiro (da ritirare / ritirato) · pagamento (da pa
 - **Contenuti catalogo** (descrizioni italiane, nomi svedesi definitivi, foto) → in `catalog.json`. I prezzi reali 1–12 sono già in `catalog.json`.
 
 Finché mancano, si lavora con dati di esempio (seed solo in sviluppo, con almeno un prodotto scoperto per testare l'ammanco e un ordine `personal` per testare l'uso personale).
+
+---
+
+## Deploy
+
+- **GitHub Actions** pubblica automaticamente su **GitHub Pages** a ogni push su `main` (workflow: `.github/workflows/deploy.yml`).
+- **URL pubblico:** `https://emmzanoli.github.io/lax/`
+- **Base path Vite:** `/lax/` — tutti gli asset e la PWA sono configurati su questo sottopercorso.
+- **Routing:** `HashRouter` (URL tipo `/#/banco`) — nessuna configurazione server richiesta.
+- **L'app è interamente statica:** nessun dato buyer nel repo né nel sito pubblicato. I dati vivono solo in IndexedDB nel browser dell'utente.
+- Il `.gitignore` esclude `ordine.xlsx`, `public/catalog.json`, `lax-backup*.json`, `*.csv` e `*.xlsx`.

@@ -6,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // offline durante la giornata di ritiro: PWA con service worker (Workbox) che
 // precache tutti gli asset del build (JS/CSS/font self-hosted/catalog.json).
 export default defineConfig({
+  base: '/lax/',
   plugins: [
     react(),
     VitePWA({
@@ -16,8 +17,8 @@ export default defineConfig({
         short_name: 'lax',
         description: 'Gestione della giornata di ritiro dei prodotti alimentari svedesi.',
         lang: 'it',
-        start_url: '/',
-        scope: '/',
+        start_url: '/lax/',
+        scope: '/lax/',
         display: 'standalone',
         background_color: '#2a2b27',
         theme_color: '#2a2b27',
@@ -30,7 +31,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,woff,woff2,json,ico}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
-        navigateFallback: '/index.html',
+        navigateFallback: '/lax/index.html',
       },
     }),
   ],
