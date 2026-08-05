@@ -1,6 +1,8 @@
 .shell {
   display: flex;
-  min-height: 100vh;
+  /* Altezza fissa al viewport: è .main che fa scroll, non il documento.
+     In standalone PWA il page-scroll del WebView non è affidabile. */
+  height: 100%;
 }
 
 .main {
@@ -8,6 +10,7 @@
   min-width: 0;
   display: flex;
   justify-content: center;
+  overflow-y: auto;
 }
 
 .content {

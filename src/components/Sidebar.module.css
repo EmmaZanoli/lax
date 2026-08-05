@@ -1,7 +1,7 @@
 .sidebar {
   width: var(--nav-width);
   flex: none;
-  height: 100vh;
+  height: 100%;   /* riempi .shell (che ora è h:100%) invece di 100vh */
   position: sticky;
   top: 0;
   display: flex;
