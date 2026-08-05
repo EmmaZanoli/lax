@@ -1,5 +1,6 @@
 import Sidebar from './Sidebar';
 import { CatalogGate } from './CatalogGate';
+import { UpdateBanner } from './UpdateBanner';
 import styles from './Layout.module.css';
 
 export function Layout() {
@@ -11,6 +12,7 @@ export function Layout() {
           <CatalogGate />
         </div>
       </main>
+      <UpdateBanner />
     </div>
   );
 }

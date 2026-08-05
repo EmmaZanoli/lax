@@ -1,0 +1,53 @@
+.banner {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--brass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.message {
+  color: var(--text-muted);
+}
+
+.reload {
+  padding: 3px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--brass);
+  color: var(--on-brass);
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+
+.reload:hover {
+  opacity: 0.85;
+}
+
+.dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--text-weak);
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.dismiss:hover {
+  color: var(--text-muted);
+}
