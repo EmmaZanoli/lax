@@ -1,5 +1,5 @@
-import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { CatalogGate } from './CatalogGate';
 import styles from './Layout.module.css';
 
 export function Layout() {
@@ -8,7 +8,7 @@ export function Layout() {
       <Sidebar />
       <main className={styles.main}>
         <div className={styles.content}>
-          <Outlet />
+          <CatalogGate />
         </div>
       </main>
     </div>

@@ -62,7 +62,7 @@ export function Prodotti() {
           <EmptyState
             glyph="❦"
             title="Catalogo vuoto"
-            description="Il catalogo di default arriva da catalog.json; puoi anche caricarne uno dalla gestione."
+            description="Nessun prodotto nel catalogo. Usa la gestione catalogo per caricarne uno."
           >
             <Button variant="primary" onClick={() => setManage(true)}>
               Apri gestione catalogo

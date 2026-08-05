@@ -1,4 +1,5 @@
 export { Layout } from './Layout';
+export { CatalogGate } from './CatalogGate';
 export { Sidebar } from './Sidebar';
 export { ScreenHeader } from './ScreenHeader';
 export { Button } from './Button';
