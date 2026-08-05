@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { useStore, totals, formatEuro, stockStatus, downloadRecap, downloadBackup } from '../lib';
+import { useStore, totals, formatEuro, stockStatus, downloadRecap, downloadBackup, isCustomer } from '../lib';
 import { useToast } from './Toast';
 import { ConfirmDialog } from './ConfirmDialog';
 import styles from './Sidebar.module.css';
@@ -9,6 +9,80 @@ import styles from './Sidebar.module.css';
 interface NavItem {
   to: string;
   label: string;
+}
+
+type StepStatus = 'done' | 'active' | 'pending';
+
+function stepIcon(status: StepStatus) {
+  if (status === 'done') return '✓';
+  if (status === 'active') return '●';
+  return '○';
+}
+
+function WorkflowStepper({
+  imported,
+  allStockSet,
+  pickedUpCount,
+  totalCustomers,
+}: {
+  imported: boolean;
+  allStockSet: boolean;
+  pickedUpCount: number;
+  totalCustomers: number;
+}) {
+  const s2: StepStatus = imported ? 'done' : 'active';
+  const s3: StepStatus = !imported ? 'pending' : allStockSet ? 'done' : 'active';
+  const s4: StepStatus =
+    !imported || !allStockSet
+      ? 'pending'
+      : totalCustomers > 0 && pickedUpCount >= totalCustomers
+        ? 'done'
+        : 'active';
+
+  const progress = totalCustomers > 0 ? pickedUpCount / totalCustomers : 0;
+
+  return (
+    <div className={styles.stepper}>
+      <div className={styles.stepItem} data-status="done">
+        <span className={styles.stepIcon} aria-hidden="true">✓</span>
+        <span className={styles.stepLabel}>Ordine al fornitore</span>
+      </div>
+
+      <div className={styles.stepItem} data-status={s2}>
+        <span className={styles.stepIcon} aria-hidden="true">{stepIcon(s2)}</span>
+        {s2 === 'active' ? (
+          <Link to="/import" className={styles.stepActiveLink}>Importa ordini</Link>
+        ) : (
+          <span className={styles.stepLabel}>Ordini importati</span>
+        )}
+      </div>
+
+      <div className={styles.stepItem} data-status={s3}>
+        <span className={styles.stepIcon} aria-hidden="true">{stepIcon(s3)}</span>
+        {s3 === 'active' ? (
+          <Link to="/magazzino" className={styles.stepActiveLink}>Inserisci giacenze</Link>
+        ) : (
+          <span className={styles.stepLabel}>Giacenza inserita</span>
+        )}
+      </div>
+
+      <div className={styles.stepItem} data-status={s4}>
+        <span className={styles.stepIcon} aria-hidden="true">{stepIcon(s4)}</span>
+        <div className={styles.stepBody}>
+          <span className={styles.stepLabel}>
+            {s4 === 'pending'
+              ? 'Ordini ritirati'
+              : `${pickedUpCount} / ${totalCustomers} ritirati`}
+          </span>
+          {s4 !== 'pending' && (
+            <div className={styles.stepBar}>
+              <div className={styles.stepBarFill} style={{ width: `${progress * 100}%` }} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /** Punto di ingresso: preparazione dei dati (una volta l'anno). */
@@ -35,12 +109,15 @@ export function Sidebar() {
   const live = useStore(
     useShallow((s) => {
       const t = totals(s);
+      const customers = s.buyers.filter(isCustomer);
       return {
         cash: t.cash,
         pending: t.pending,
         toPick: t.toPickCount,
-        ordersImported: s.buyers.length > 0,
-        stockReady: s.catalog.some((p) => p.initialStock > 0),
+        imported: s.buyers.length > 0,
+        allStockSet: s.catalog.length > 0 && s.catalog.every((p) => p.initialStock > 0),
+        pickedUpCount: customers.filter((b) => b.pickedUp).length,
+        totalCustomers: customers.length,
       };
     }),
   );
@@ -98,14 +175,12 @@ export function Sidebar() {
           ))}
         </ul>
 
-        {live.ordersImported && !live.stockReady && (
-          <div className={styles.nextStep}>
-            <span className={styles.nextStepLabel}>Prossimo passo</span>
-            <Link to="/magazzino" className={styles.nextStepLink}>
-              Imposta le giacenze →
-            </Link>
-          </div>
-        )}
+        <WorkflowStepper
+          imported={live.imported}
+          allStockSet={live.allStockSet}
+          pickedUpCount={live.pickedUpCount}
+          totalCustomers={live.totalCustomers}
+        />
 
         <div className={styles.divider} role="separator" />
 

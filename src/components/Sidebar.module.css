@@ -116,37 +116,92 @@
   margin: var(--space-2) var(--space-3);
 }
 
-/* ---- Prossimo passo: promemoria giacenze post-import ---- */
+/* -------------------------------------------- workflow stepper */
 
-.nextStep {
+.stepper {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--brass) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--brass) 22%, transparent);
-  border-left: 3px solid var(--brass);
+  padding: var(--space-1) var(--space-3);
 }
 
-.nextStepLabel {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.stepItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 4px 0;
+}
+
+.stepIcon {
+  flex: none;
+  width: 16px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 20px;
+}
+
+.stepItem[data-status='done'] .stepIcon {
+  color: var(--brass);
+}
+
+.stepItem[data-status='active'] .stepIcon {
+  color: var(--brass);
+}
+
+.stepItem[data-status='pending'] .stepIcon {
   color: var(--text-weak);
 }
 
-.nextStepLink {
+.stepLabel {
   font-size: 13px;
+  line-height: 20px;
+}
+
+.stepItem[data-status='done'] .stepLabel {
+  color: var(--text-weak);
+}
+
+.stepItem[data-status='active'] .stepLabel {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.stepItem[data-status='pending'] .stepLabel {
+  color: var(--text-weak);
+}
+
+.stepActiveLink {
+  font-size: 13px;
+  line-height: 20px;
   font-weight: 600;
   color: var(--brass);
   text-decoration: none;
   transition: color 120ms ease;
 }
 
-.nextStepLink:hover {
+.stepActiveLink:hover {
   color: color-mix(in srgb, var(--brass) 80%, white);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepBar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--rule-soft);
+  overflow: hidden;
+}
+
+.stepBarFill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--brass);
+  transition: width 400ms ease;
 }
 
 .item {
