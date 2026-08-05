@@ -57,6 +57,11 @@ function downloadBlob(buf: ArrayBuffer | Buffer, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+/** Imposta un valore numerico/testo oppure una formula con risultato precalcolato. */
+function fv(formula: string, result: number): { formula: string; result: number } {
+  return { formula, result };
+}
+
 function solid(argb: string): Fill {
   return { type: 'pattern', pattern: 'solid', fgColor: { argb } };
 }
@@ -69,10 +74,7 @@ function applyFill(cell: Cell, argb: string): void {
 
 function applyFont(
   cell: Cell,
-  opts: {
-    name?: string; size?: number; bold?: boolean;
-    italic?: boolean; color?: string;
-  },
+  opts: { name?: string; size?: number; bold?: boolean; italic?: boolean; color?: string },
 ): void {
   cell.font = {
     ...cell.font,
@@ -122,8 +124,19 @@ function totCell(cell: Cell, a: 'left' | 'center' | 'right' = 'right'): void {
 }
 
 // ── Sheet 1: Riepilogo ────────────────────────────────────────────────────────
+//
+// I KPI usano SUMPRODUCT/COUNTIF sul foglio Ordini (cross-sheet).
+// La quadratura è una formula IF.
+// La riconciliazione fornitore referenzia la riga totale del foglio Fornitore.
+// ordiniLastDataRow: ultima riga dati di Ordini (5 + customerCount - 1)
+// fornitoreTotal:    riga totale di Fornitore   (5 + fornitoreRowCount)
 
-function buildRiepilogo(wb: Workbook, state: AppState): void {
+function buildRiepilogo(
+  wb: Workbook,
+  state: AppState,
+  ordiniLastDataRow: number,
+  fornitoreTotal: number,
+): void {
   const ws = wb.addWorksheet('Riepilogo');
   ws.views = [{ showGridLines: false }];
 
@@ -137,6 +150,11 @@ function buildRiepilogo(wb: Workbook, state: AppState): void {
   const t = totals(state);
   const ordered = orderedTotals(state);
   const dateStr = new Date().toLocaleDateString('it-IT');
+
+  // Ranges cross-sheet (Ordini: E=Ritiro col5, F=Pagamento col6, D=Totale col4)
+  const oE = `Ordini!E5:E${ordiniLastDataRow}`;
+  const oF = `Ordini!F5:F${ordiniLastDataRow}`;
+  const oD = `Ordini!D5:D${ordiniLastDataRow}`;
 
   // Row 2: "lax" + data generazione
   ws.getRow(2).height = 38;
@@ -164,18 +182,54 @@ function buildRiepilogo(wb: Workbook, state: AppState): void {
   ws.getRow(4).height = 3;
   for (let c = 2; c <= 6; c++) applyFill(ws.getCell(4, c), C.brass);
 
-  // 6 schede KPI
+  // 6 schede KPI con formule cross-sheet
   const CARDS = [
-    { label: 'CONTANTI IN CASSA',        value: t.cash,        fmt: FMT_EUR, s: STATE.cash },
-    { label: 'BONIFICI RICEVUTI',         value: t.received,    fmt: FMT_EUR, s: STATE.received },
-    { label: 'BONIFICI ATTESI',           value: t.pending,     fmt: FMT_EUR, s: STATE.pending },
-    { label: 'RITIRATO, NON PAGATO',      value: t.unpaid,      fmt: FMT_EUR, s: STATE.alarm },
-    { label: 'DEVONO RITIRARE (valore)',  value: t.toPickValue, fmt: FMT_EUR, s: STATE.neutral },
-    { label: 'DEVONO RITIRARE (persone)', value: t.toPickCount, fmt: FMT_INT, s: STATE.neutral },
-  ] as const;
+    {
+      label:   'CONTANTI IN CASSA',
+      value:   t.cash,
+      fmt:     FMT_EUR,
+      s:       STATE.cash,
+      formula: `SUMPRODUCT((${oE}="Ritirato")*(${oF}="Contanti")*${oD})`,
+    },
+    {
+      label:   'BONIFICI RICEVUTI',
+      value:   t.received,
+      fmt:     FMT_EUR,
+      s:       STATE.received,
+      formula: `SUMPRODUCT((${oE}="Ritirato")*(${oF}="Bonifico ricevuto")*${oD})`,
+    },
+    {
+      label:   'BONIFICI ATTESI',
+      value:   t.pending,
+      fmt:     FMT_EUR,
+      s:       STATE.pending,
+      formula: `SUMPRODUCT((${oE}="Ritirato")*(${oF}="Bonifico atteso")*${oD})`,
+    },
+    {
+      label:   'RITIRATO, NON PAGATO',
+      value:   t.unpaid,
+      fmt:     FMT_EUR,
+      s:       STATE.alarm,
+      formula: `SUMPRODUCT((${oE}="Ritirato")*(${oF}="Da pagare")*${oD})`,
+    },
+    {
+      label:   'DEVONO RITIRARE (valore)',
+      value:   t.toPickValue,
+      fmt:     FMT_EUR,
+      s:       STATE.neutral,
+      formula: `SUMPRODUCT((${oE}="Da ritirare")*${oD})`,
+    },
+    {
+      label:   'DEVONO RITIRARE (persone)',
+      value:   t.toPickCount,
+      fmt:     FMT_INT,
+      s:       STATE.neutral,
+      formula: `COUNTIF(${oE},"Da ritirare")`,
+    },
+  ];
 
   const cardBaseRows = [6, 10, 14] as const;
-  const cardColPairs  = [[2, 3], [5, 6]] as const;
+  const cardColPairs = [[2, 3], [5, 6]] as const;
 
   CARDS.forEach((card, i) => {
     const baseRow = cardBaseRows[Math.floor(i / 2)];
@@ -198,10 +252,10 @@ function buildRiepilogo(wb: Workbook, state: AppState): void {
       left:  { style: 'thick', color: { argb: card.s.text } },
     };
 
-    // Valore (2 righe unite)
+    // Valore (2 righe unite) — formula cross-sheet con risultato precalcolato
     ws.mergeCells(baseRow + 1, sc, baseRow + 2, ec);
     const vc = ws.getCell(baseRow + 1, sc);
-    vc.value = card.value;
+    vc.value  = fv(card.formula, card.value);
     vc.numFmt = card.fmt;
     applyFill(vc, C.panel);
     vc.font = { name: 'Georgia', bold: true, size: 20, color: { argb: C.ink } };
@@ -216,24 +270,27 @@ function buildRiepilogo(wb: Workbook, state: AppState): void {
   // Row 17: spaziatore
   ws.getRow(17).height = 8;
 
-  // Riga 18: esito quadratura
+  // Riga 18: esito quadratura come formula IF
   ws.getRow(18).height = 22;
   ws.mergeCells('B18:F18');
   const quadCell = ws.getCell('B18');
   const balanced = isBalanced(state);
   const pickedVal = pickedUpValue(t);
+  // valoreRitirato (tutti i ritirato sul foglio Ordini) vs somma dei 4 bucket KPI
+  quadCell.value = {
+    formula: `IF(ROUND(SUMPRODUCT((${oE}="Ritirato")*${oD})-(B7+E7+B11+E11),2)=0,"✓  I conti quadrano","⚠  Conti da verificare")`,
+    result: balanced ? '✓  I conti quadrano' : '⚠  Conti da verificare',
+  };
   if (balanced) {
-    quadCell.value = '✓  I conti quadrano';
     applyFill(quadCell, STATE.received.fill);
     quadCell.font = { name: 'Arial', bold: true, size: 12, color: { argb: STATE.received.text } };
   } else {
-    quadCell.value = '⚠  Conti da verificare';
     applyFill(quadCell, STATE.alarm.fill);
     quadCell.font = { name: 'Arial', bold: true, size: 12, color: { argb: STATE.alarm.text } };
   }
   quadCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-  // Riga 19: formula testuale quadratura
+  // Riga 19: descrizione quadratura (valore testuale con numero formattato — no formula)
   ws.getRow(19).height = 18;
   ws.mergeCells('B19:F19');
   const quadDesc = ws.getCell('B19');
@@ -257,16 +314,21 @@ function buildRiepilogo(wb: Workbook, state: AppState): void {
   ws.getRow(23).height = 22;
   for (let c = 2; c <= 6; c++) applyFill(ws.getCell(23, c), C.tint);
 
+  // Pezzi totali — formula: concatena il valore della riga totale Fornitore col testo
   ws.mergeCells('B23:D23');
   const reco1 = ws.getCell('B23');
-  reco1.value = `${ordered.totalPieces} pezzi in totale`;
+  reco1.value = {
+    formula: `Fornitore!F${fornitoreTotal}&" pezzi in totale"`,
+    result:  `${ordered.totalPieces} pezzi in totale`,
+  };
   applyFill(reco1, C.tint);
   reco1.font = { name: 'Arial', bold: true, size: 10, color: { argb: C.brassDk } };
   reco1.alignment = { horizontal: 'left', vertical: 'middle' };
 
+  // Valore totale — formula: cell reference alla riga totale Fornitore
   ws.mergeCells('E23:F23');
   const reco2 = ws.getCell('E23');
-  reco2.value = ordered.totalValue;
+  reco2.value  = fv(`Fornitore!G${fornitoreTotal}`, ordered.totalValue);
   reco2.numFmt = FMT_EUR;
   applyFill(reco2, C.tint);
   reco2.font = { name: 'Georgia', bold: true, size: 10, color: { argb: C.brassDk } };
@@ -282,14 +344,15 @@ function buildRiepilogo(wb: Workbook, state: AppState): void {
 
   ws.pageSetup = {
     orientation: 'portrait',
-    fitToPage: true,
-    fitToWidth: 1,
+    fitToPage:   true,
+    fitToWidth:  1,
     fitToHeight: 1,
-    printArea: 'A1:F27',
+    printArea:   'A1:F27',
   };
 }
 
 // ── Sheet 2: Ordini ───────────────────────────────────────────────────────────
+// Riga totale con SUM(Pezzi) e SUM(Totale).
 
 function buildOrdini(wb: Workbook, state: AppState): void {
   const ws = wb.addWorksheet('Ordini');
@@ -368,37 +431,42 @@ function buildOrdini(wb: Workbook, state: AppState): void {
     addBorder(ws.getCell(rn, 5), 'bottom', 'thin', C.hairline);
 
     // Chip Pagamento
-    const pagState = !buyer.pickedUp        ? STATE.neutral
-      : buyer.payment === 'cash'            ? STATE.cash
-      : buyer.payment === 'received'        ? STATE.received
-      : buyer.payment === 'pending'         ? STATE.pending
+    const pagState = !buyer.pickedUp       ? STATE.neutral
+      : buyer.payment === 'cash'           ? STATE.cash
+      : buyer.payment === 'received'       ? STATE.received
+      : buyer.payment === 'pending'        ? STATE.pending
       : STATE.alarm;
     chipCell(ws.getCell(rn, 6), pagState);
     addBorder(ws.getCell(rn, 6), 'bottom', 'thin', C.hairline);
   });
 
-  // Riga totale
+  // Riga totale con SUM
   const tn = 5 + customers.length;
   ws.getRow(tn).height = 20;
   for (let c = 1; c <= 6; c++) totCell(ws.getCell(tn, c), c === 1 ? 'left' : 'right');
   ws.getCell(tn, 1).value = 'Totale';
-  ws.getCell(tn, 3).value = sumPieces;
-  ws.getCell(tn, 3).numFmt = FMT_INT;
-  ws.getCell(tn, 4).value = sumValue;
-  ws.getCell(tn, 4).numFmt = FMT_EUR;
+
+  const cPezzi = ws.getCell(tn, 3);
+  cPezzi.value  = fv(`SUM(C5:C${tn - 1})`, sumPieces);
+  cPezzi.numFmt = FMT_INT;
+
+  const cTot = ws.getCell(tn, 4);
+  cTot.value  = fv(`SUM(D5:D${tn - 1})`, sumValue);
+  cTot.numFmt = FMT_EUR;
 
   ws.views = [{ state: 'frozen', ySplit: 4, showGridLines: false }];
   ws.autoFilter = `A4:F${tn - 1}`;
   ws.pageSetup = {
-    orientation: 'landscape',
-    fitToPage: true,
-    fitToWidth: 1,
-    fitToHeight: 0,
+    orientation:   'landscape',
+    fitToPage:     true,
+    fitToWidth:    1,
+    fitToHeight:   0,
     printTitlesRow: '4:4',
   };
 }
 
 // ── Sheet 3: Magazzino ────────────────────────────────────────────────────────
+// Residuo = formula =D-F per riga. Riga totale: SUM per colonne numeriche.
 
 function buildMagazzino(wb: Workbook, state: AppState): void {
   const ws = wb.addWorksheet('Magazzino');
@@ -444,9 +512,10 @@ function buildMagazzino(wb: Workbook, state: AppState): void {
     sp += s.pickedUp;
     sr += s.residual;
 
+    // Colonne A-F e H (Stato) come valori; G (Residuo) come formula
     const vals: (string | number)[] = [
       s.number, p?.nameSv ?? '', p?.weight ?? '',
-      p?.initialStock ?? 0, s.ordered, s.pickedUp, s.residual, '',
+      p?.initialStock ?? 0, s.ordered, s.pickedUp,
     ];
     vals.forEach((v, ci) => {
       const cell = ws.getCell(rn, ci + 1);
@@ -455,17 +524,26 @@ function buildMagazzino(wb: Workbook, state: AppState): void {
       bandCell(cell, odd);
       cell.font = { name: 'Arial', size: 10, color: { argb: C.ink } };
       cell.alignment = { horizontal: ci <= 2 ? 'left' : 'center', vertical: 'middle' };
-      if (ci >= 3 && ci <= 6) cell.numFmt = FMT_INT;
+      if (ci >= 3) cell.numFmt = FMT_INT;
     });
 
-    // Chip Stato
+    // Residuo = Iniziale (D) − Ritirati (F)
+    const residuoCell = ws.getCell(rn, 7);
+    residuoCell.value  = fv(`D${rn}-F${rn}`, s.residual);
+    residuoCell.numFmt = FMT_INT;
+    bandCell(residuoCell, odd);
+    residuoCell.font      = { name: 'Arial', size: 10, color: { argb: C.ink } };
+    residuoCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Stato chip (col H)
     const statoCell = ws.getCell(rn, 8);
+    bandCell(statoCell, odd);
     if (s.delta < 0) {
       statoCell.value = `mancano ${-s.delta}`;
       chipCell(statoCell, STATE.alarm);
       addBorder(statoCell, 'bottom', 'thin', C.hairline);
-      // Residuo in rosso
-      applyFont(ws.getCell(rn, 7), { bold: true, color: STATE.alarm.text });
+      // Residuo in rosso quando prodotto scoperto
+      applyFont(residuoCell, { bold: true, color: STATE.alarm.text });
     } else {
       statoCell.value = s.delta > 0 ? `coperto (+${s.delta})` : 'coperto';
       chipCell(statoCell, STATE.received);
@@ -473,28 +551,37 @@ function buildMagazzino(wb: Workbook, state: AppState): void {
     }
   });
 
-  // Riga totale
+  // Riga totale con SUM
   const tn = 5 + stock.length;
   ws.getRow(tn).height = 20;
   for (let c = 1; c <= 8; c++) totCell(ws.getCell(tn, c), c === 1 ? 'left' : 'center');
   ws.getCell(tn, 1).value = 'Totale';
-  ws.getCell(tn, 4).value = si; ws.getCell(tn, 4).numFmt = FMT_INT;
-  ws.getCell(tn, 5).value = so; ws.getCell(tn, 5).numFmt = FMT_INT;
-  ws.getCell(tn, 6).value = sp; ws.getCell(tn, 6).numFmt = FMT_INT;
-  ws.getCell(tn, 7).value = sr; ws.getCell(tn, 7).numFmt = FMT_INT;
+
+  const numCols: [number, number, string][] = [
+    [4, si, `SUM(D5:D${tn - 1})`],
+    [5, so, `SUM(E5:E${tn - 1})`],
+    [6, sp, `SUM(F5:F${tn - 1})`],
+    [7, sr, `SUM(G5:G${tn - 1})`],
+  ];
+  numCols.forEach(([c, res, formula]) => {
+    const cell = ws.getCell(tn, c);
+    cell.value  = fv(formula, res);
+    cell.numFmt = FMT_INT;
+  });
 
   ws.views = [{ state: 'frozen', ySplit: 4, showGridLines: false }];
   ws.autoFilter = `A4:H${tn - 1}`;
   ws.pageSetup = {
-    orientation: 'landscape',
-    fitToPage: true,
-    fitToWidth: 1,
-    fitToHeight: 0,
+    orientation:   'landscape',
+    fitToPage:     true,
+    fitToWidth:    1,
+    fitToHeight:   0,
     printTitlesRow: '4:4',
   };
 }
 
 // ── Sheet 4: Uso personale (itemizzato per prodotto) ──────────────────────────
+// Subtotali per gruppo: SUM del gruppo. Totale finale: SUM dei subtotali.
 
 function buildUsoPersonale(wb: Workbook, state: AppState): void {
   const ws = wb.addWorksheet('Uso personale');
@@ -532,7 +619,6 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
 
   ws.mergeCells('E3:F3');
   const kv3 = ws.getCell('E3');
-  kv3.value = t.personal;
   kv3.numFmt = FMT_EUR;
   applyFill(kv3, C.tint);
   kv3.font = { name: 'Georgia', bold: true, size: 14, color: { argb: C.brassDk } };
@@ -552,6 +638,7 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
   ws.views = [{ state: 'frozen', ySplit: 5, showGridLines: false }];
 
   if (personalBuyers.length === 0) {
+    kv3.value = t.personal; // valore statico se nessun ordine
     ws.getRow(6).height = 18;
     ws.mergeCells('A6:F6');
     const ec = ws.getCell('A6');
@@ -563,9 +650,13 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
     return;
   }
 
-  let rowNum     = 6;
+  let rowNum      = 6;
   let grandPieces = 0;
   let grandValue  = 0;
+
+  // Raccolgo i riferimenti alle celle dei subtotali per il totale finale
+  const subQtyRefs: string[] = [];
+  const subValRefs: string[] = [];
 
   personalBuyers.forEach((buyer, gi) => {
     const products = Object.entries(buyer.order)
@@ -574,10 +665,11 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
 
     if (products.length === 0) return;
 
-    const groupFill = gi % 2 === 0 ? C.white : C.band;
-    let subPieces = 0;
-    let subValue  = 0;
-    let first = true;
+    const groupFill    = gi % 2 === 0 ? C.white : C.band;
+    const groupStart   = rowNum; // prima riga dati del gruppo
+    let   subPieces    = 0;
+    let   subValue     = 0;
+    let   first        = true;
 
     for (const { num, qty } of products) {
       const p = prodMap.get(num);
@@ -589,7 +681,6 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
 
       ws.getRow(rowNum).height = 18;
 
-      // Colonna A: nome (solo prima riga del gruppo)
       const nameCell = ws.getCell(rowNum, 1);
       nameCell.value = first ? buyer.name : null;
       applyFill(nameCell, groupFill);
@@ -597,7 +688,6 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
       nameCell.alignment = { horizontal: 'left', vertical: 'middle' };
       nameCell.border = { bottom: { style: 'thin', color: { argb: C.hairline } } };
 
-      // Colonne B-F: cod, prodotto, peso, quantità, valore
       const rowVals: (number | string)[] = [num, p?.nameSv ?? '', p?.weight ?? '', qty, v];
       rowVals.forEach((val, ci) => {
         const cell = ws.getCell(rowNum, ci + 2);
@@ -615,7 +705,8 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
       rowNum++;
     }
 
-    // Riga subtotale
+    // Riga subtotale: SUM del gruppo (groupStart..rowNum-1)
+    const groupEnd = rowNum - 1;
     ws.getRow(rowNum).height = 16;
     ws.mergeCells(rowNum, 1, rowNum, 4);
     const sl = ws.getCell(rowNum, 1);
@@ -625,38 +716,43 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
     sl.alignment = { horizontal: 'right', vertical: 'middle' };
 
     const sq = ws.getCell(rowNum, 5);
-    sq.value = subPieces;
+    sq.value  = fv(`SUM(E${groupStart}:E${groupEnd})`, subPieces);
     sq.numFmt = FMT_INT;
     applyFill(sq, C.band);
     sq.font = { name: 'Arial', italic: true, size: 9, color: { argb: C.mute } };
     sq.alignment = { horizontal: 'center', vertical: 'middle' };
 
     const sv = ws.getCell(rowNum, 6);
-    sv.value = subValue;
+    sv.value  = fv(`SUM(F${groupStart}:F${groupEnd})`, subValue);
     sv.numFmt = FMT_EUR;
     applyFill(sv, C.band);
     sv.font = { name: 'Arial', italic: true, size: 9, color: { argb: C.mute } };
     sv.alignment = { horizontal: 'right', vertical: 'middle' };
 
+    subQtyRefs.push(`E${rowNum}`);
+    subValRefs.push(`F${rowNum}`);
     rowNum++;
   });
 
-  // Riga totale complessivo
+  // Cella E3 (KPI) referenzia la riga totale che costruiamo ora
+  // Non possiamo fare una formula circolare; usiamo SUM di tutti i subtotali
+  kv3.value = fv(`SUM(${subValRefs.join(',')})`, grandValue);
+
+  // Riga totale finale: SUM dei subtotali
   ws.getRow(rowNum).height = 20;
   ws.mergeCells(rowNum, 1, rowNum, 4);
   const tl = ws.getCell(rowNum, 1);
   tl.value = 'TOTALE';
   totCell(tl, 'left');
-  // Applica bordo superiore alle celle non-master della riga totale
   for (let c = 5; c <= 6; c++) addBorder(ws.getCell(rowNum, c), 'top', 'medium', C.brass);
 
   const tq = ws.getCell(rowNum, 5);
-  tq.value = grandPieces;
+  tq.value  = fv(`SUM(${subQtyRefs.join(',')})`, grandPieces);
   tq.numFmt = FMT_INT;
   totCell(tq, 'center');
 
   const tv = ws.getCell(rowNum, 6);
-  tv.value = grandValue;
+  tv.value  = fv(`SUM(${subValRefs.join(',')})`, grandValue);
   tv.numFmt = FMT_EUR;
   totCell(tv, 'right');
 
@@ -664,6 +760,7 @@ function buildUsoPersonale(wb: Workbook, state: AppState): void {
 }
 
 // ── Sheet 5: Fornitore ────────────────────────────────────────────────────────
+// Totale pezzi = formula =D+E per riga. Riga totale: SUM + formula D+E.
 
 function buildFornitore(wb: Workbook, state: AppState): void {
   const ws = wb.addWorksheet('Fornitore');
@@ -704,10 +801,8 @@ function buildFornitore(wb: Workbook, state: AppState): void {
     const p   = prodMap.get(r.number);
     ws.getRow(rn).height = 18;
 
-    const vals: (string | number)[] = [
-      r.number, p?.nameSv ?? '', p?.weight ?? '',
-      r.customer, r.personal, r.total, r.value,
-    ];
+    // Colonne A-E: Cod, Prodotto, Peso, Clienti, Personale (valori)
+    const vals: (string | number)[] = [r.number, p?.nameSv ?? '', p?.weight ?? '', r.customer, r.personal];
     vals.forEach((v, ci) => {
       const cell = ws.getCell(rn, ci + 1);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -715,32 +810,53 @@ function buildFornitore(wb: Workbook, state: AppState): void {
       bandCell(cell, odd);
       cell.font = { name: 'Arial', size: 10, color: { argb: C.ink } };
       cell.alignment = { horizontal: ci <= 2 ? 'left' : 'center', vertical: 'middle' };
-      if (ci >= 3 && ci <= 5) cell.numFmt = FMT_INT;
-      if (ci === 6) cell.numFmt = FMT_EUR;
+      if (ci >= 3) cell.numFmt = FMT_INT;
     });
+
+    // Totale pezzi (F) = Clienti (D) + Personale (E)
+    const totPiezziCell = ws.getCell(rn, 6);
+    totPiezziCell.value  = fv(`D${rn}+E${rn}`, r.total);
+    totPiezziCell.numFmt = FMT_INT;
+    bandCell(totPiezziCell, odd);
+    totPiezziCell.font      = { name: 'Arial', size: 10, color: { argb: C.ink } };
+    totPiezziCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Valore (G): pre-calcolato (total × prezzo non è in foglio)
+    const valoreCell = ws.getCell(rn, 7);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    valoreCell.value  = r.value as any;
+    valoreCell.numFmt = FMT_EUR;
+    bandCell(valoreCell, odd);
+    valoreCell.font      = { name: 'Arial', size: 10, color: { argb: C.ink } };
+    valoreCell.alignment = { horizontal: 'center', vertical: 'middle' };
   });
 
   // Riga totale
   const tn = 5 + ordered.rows.length;
+  const customerPieces = ordered.totalPieces - ordered.personalPieces;
   ws.getRow(tn).height = 20;
   for (let c = 1; c <= 7; c++) totCell(ws.getCell(tn, c), c === 1 ? 'left' : 'center');
   ws.getCell(tn, 1).value = 'Totale';
-  ws.getCell(tn, 4).value = ordered.totalPieces - ordered.personalPieces;
-  ws.getCell(tn, 4).numFmt = FMT_INT;
-  ws.getCell(tn, 5).value = ordered.personalPieces;
-  ws.getCell(tn, 5).numFmt = FMT_INT;
-  ws.getCell(tn, 6).value = ordered.totalPieces;
-  ws.getCell(tn, 6).numFmt = FMT_INT;
-  ws.getCell(tn, 7).value = ordered.totalValue;
-  ws.getCell(tn, 7).numFmt = FMT_EUR;
+
+  const totCols: [number, number, string][] = [
+    [4, customerPieces,            `SUM(D5:D${tn - 1})`],
+    [5, ordered.personalPieces,    `SUM(E5:E${tn - 1})`],
+    [6, ordered.totalPieces,       `D${tn}+E${tn}`],
+    [7, ordered.totalValue,        `SUM(G5:G${tn - 1})`],
+  ];
+  totCols.forEach(([c, res, formula]) => {
+    const cell    = ws.getCell(tn, c);
+    cell.value    = fv(formula, res);
+    cell.numFmt   = c === 7 ? FMT_EUR : FMT_INT;
+  });
 
   ws.views = [{ state: 'frozen', ySplit: 4, showGridLines: false }];
   ws.autoFilter = `A4:G${tn - 1}`;
   ws.pageSetup = {
-    orientation: 'landscape',
-    fitToPage: true,
-    fitToWidth: 1,
-    fitToHeight: 0,
+    orientation:   'landscape',
+    fitToPage:     true,
+    fitToWidth:    1,
+    fitToHeight:   0,
     printTitlesRow: '4:4',
   };
 }
@@ -752,7 +868,13 @@ export async function downloadRecap(state: AppState): Promise<void> {
   wb.creator = 'lax';
   wb.created = new Date();
 
-  buildRiepilogo(wb, state);
+  // Info per le formule cross-sheet del Riepilogo, calcolate prima di costruire i fogli
+  const customerCount     = state.buyers.filter(isCustomer).length;
+  const fornitoreRowCount = orderedTotals(state).rows.length;
+  const ordiniLastDataRow = 4 + customerCount;       // ultima riga dati Ordini (5 + n - 1)
+  const fornitoreTotal    = 5 + fornitoreRowCount;   // riga totale Fornitore
+
+  buildRiepilogo(wb, state, ordiniLastDataRow, fornitoreTotal);
   buildOrdini(wb, state);
   buildMagazzino(wb, state);
   buildUsoPersonale(wb, state);
