@@ -16,10 +16,5 @@ export {
   stockBars,
 } from './selectors';
 export type { Totals, OrderedRow, OrderedTotals, StockStatus, StockBar } from './selectors';
-export {
-  recapCsv,
-  backupJson,
-  isBalanced,
-  downloadRecap,
-  downloadBackup,
-} from './export';
+export { backupJson, isBalanced, downloadBackup } from './export';
+export { downloadRecap } from './exportRecap';

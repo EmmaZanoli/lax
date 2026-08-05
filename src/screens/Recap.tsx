@@ -125,8 +125,8 @@ export function Recap() {
     { key: 'to-pick', label: 'Devono ritirare', value: t.toPickValue, count: t.toPickCount, tone: 'unpaid' },
   ];
 
-  const onExport = () => {
-    downloadRecap(useStore.getState());
+  const onExport = async () => {
+    await downloadRecap(useStore.getState());
     toast.show('Recap esportato', 'brass');
   };
   const onBackup = () => {

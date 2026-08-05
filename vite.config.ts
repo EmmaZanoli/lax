@@ -54,6 +54,9 @@ export default defineConfig({
       },
     }),
   ],
+  optimizeDeps: {
+    include: ['exceljs'],
+  },
   server: {
     port: 5173,
     open: true,
