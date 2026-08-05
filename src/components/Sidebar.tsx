@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { useStore, totals, formatEuro, stockStatus, downloadRecap, downloadBackup, isCustomer } from '../lib';
+import { useStore, stockStatus, downloadRecap, downloadBackup, isCustomer } from '../lib';
 import { useToast } from './Toast';
 import { ConfirmDialog } from './ConfirmDialog';
 import styles from './Sidebar.module.css';
@@ -108,12 +108,8 @@ export function Sidebar() {
   // Numeri live agganciati ai selettori derivati.
   const live = useStore(
     useShallow((s) => {
-      const t = totals(s);
       const customers = s.buyers.filter(isCustomer);
       return {
-        cash: t.cash,
-        pending: t.pending,
-        toPick: t.toPickCount,
         imported: s.buyers.length > 0,
         allStockSet: s.catalog.length > 0 && s.catalog.every((p) => p.initialStock > 0),
         pickedUpCount: customers.filter((b) => b.pickedUp).length,
@@ -198,22 +194,7 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className={styles.live} aria-label="Numeri live">
-        <div className={styles.liveRow} data-tone="cash">
-          <span className="label">Contanti</span>
-          <span className={styles.liveValue}>{formatEuro(live.cash)}</span>
-        </div>
-        <div className={styles.liveRow} data-tone="pending">
-          <span className="label">Bonifici attesi</span>
-          <span className={styles.liveValue}>{formatEuro(live.pending)}</span>
-        </div>
-        <div className={styles.liveRow} data-tone="neutral">
-          <span className="label">Da ritirare</span>
-          <span className={styles.liveValue}>{live.toPick}</span>
-        </div>
-      </div>
-
-      <div className={styles.tools}>
+<div className={styles.tools}>
         <button type="button" className={styles.toolBtn} onClick={handleExport}>
           Esporta recap
         </button>

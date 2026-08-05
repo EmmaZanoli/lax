@@ -258,46 +258,6 @@
   background: var(--brass);
 }
 
-/* -------------------------------------------------------- numeri live */
-
-.live {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--space-4) var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--rule-soft);
-  border-radius: var(--radius-md);
-}
-
-.liveRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: 6px 0;
-}
-
-.liveRow + .liveRow {
-  border-top: 1px solid var(--rule-soft);
-}
-
-.liveValue {
-  font-family: var(--font-serif);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1;
-  font-size: 18px;
-  letter-spacing: -0.015em;
-  color: var(--text);
-}
-
-.liveRow[data-tone='cash'] .liveValue {
-  color: var(--cash);
-}
-.liveRow[data-tone='pending'] .liveValue {
-  color: var(--pending);
-}
 
 /* ------------------------------------------------------ annulla azione */
 
@@ -428,9 +388,8 @@
     height: 3px;
   }
 
-  /* Numeri live e strumenti globali si nascondono nella barra compatta.
+  /* Strumenti globali si nascondono nella barra compatta.
      Export/Backup restano raggiungibili dall'intestazione del Recap. */
-  .live,
   .tools,
   .reset,
   .toggle {
