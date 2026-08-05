@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useStore, totals, formatEuro, stockStatus, downloadRecap, downloadBackup } from '../lib';
 import { useToast } from './Toast';
@@ -35,7 +35,13 @@ export function Sidebar() {
   const live = useStore(
     useShallow((s) => {
       const t = totals(s);
-      return { cash: t.cash, pending: t.pending, toPick: t.toPickCount };
+      return {
+        cash: t.cash,
+        pending: t.pending,
+        toPick: t.toPickCount,
+        ordersImported: s.buyers.length > 0,
+        stockReady: s.catalog.some((p) => p.initialStock > 0),
+      };
     }),
   );
 
@@ -91,6 +97,15 @@ export function Sidebar() {
             </li>
           ))}
         </ul>
+
+        {live.ordersImported && !live.stockReady && (
+          <div className={styles.nextStep}>
+            <span className={styles.nextStepLabel}>Prossimo passo</span>
+            <Link to="/magazzino" className={styles.nextStepLink}>
+              Imposta le giacenze →
+            </Link>
+          </div>
+        )}
 
         <div className={styles.divider} role="separator" />
 

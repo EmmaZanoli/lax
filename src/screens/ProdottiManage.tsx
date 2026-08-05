@@ -12,16 +12,10 @@ const blurOnEnter = (e: KeyboardEvent<HTMLInputElement>) => {
 /** Riga di modifica di un prodotto: stato locale, commit su blur/Invio. */
 function CatalogEditRow({ product }: { product: Product }) {
   const updateProduct = useStore((s) => s.updateProduct);
-  const [stock, setStock] = useState(String(product.initialStock));
   const [price, setPrice] = useState(String(product.price).replace('.', ','));
   const [desc, setDesc] = useState(product.descIt);
   const [photo, setPhoto] = useState(product.photoUrl ?? '');
 
-  const commitStock = () => {
-    const n = Math.max(0, Math.round(Number(stock.replace(',', '.')) || 0));
-    updateProduct(product.number, { initialStock: n });
-    setStock(String(n));
-  };
   const commitPrice = () => {
     const n = Math.max(0, Number(price.replace(',', '.')) || 0);
     updateProduct(product.number, { price: n });
@@ -40,19 +34,6 @@ function CatalogEditRow({ product }: { product: Product }) {
           {product.weight && <span className={styles.editWeight}> · {product.weight}</span>}
         </span>
       </div>
-
-      <label className={styles.field}>
-        <span className={styles.fieldLabel}>Giacenza iniziale</span>
-        <input
-          className={styles.inputNum}
-          inputMode="numeric"
-          value={stock}
-          onChange={(e) => setStock(e.target.value)}
-          onBlur={commitStock}
-          onKeyDown={blurOnEnter}
-          aria-label={`Giacenza iniziale ${product.nameSv}`}
-        />
-      </label>
 
       <label className={styles.field}>
         <span className={styles.fieldLabel}>Prezzo €</span>
@@ -116,7 +97,7 @@ export function ProdottiManage({ onDone }: { onDone: () => void }) {
     <>
       <ScreenHeader
         title="Gestione catalogo"
-        subtitle="Sostituisci il file, imposta le giacenze iniziali e aggiorna prezzo, descrizione e foto."
+        subtitle="Sostituisci il file catalogo e aggiorna prezzo, descrizione e foto."
         actions={
           <Button variant="secondary" onClick={onDone}>
             Fatto
@@ -152,7 +133,6 @@ export function ProdottiManage({ onDone }: { onDone: () => void }) {
         <div className={styles.editList}>
           <div className={styles.editHead}>
             <span className="label">Prodotto</span>
-            <span className="label">Giacenza iniziale</span>
             <span className="label">Prezzo €</span>
             <span className="label">Descrizione</span>
             <span className="label">Foto (URL)</span>

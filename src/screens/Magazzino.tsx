@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore, stockBars, type StockBar } from '../lib';
 import { Chip, EmptyState, Panel, ScreenHeader, Button } from '../components';
+import { MagazzinoGiacenze } from './MagazzinoGiacenze';
 import styles from './Magazzino.module.css';
 
 const LEGEND = [
@@ -41,6 +42,10 @@ export function Magazzino() {
   const navigate = useNavigate();
   const catalog = useStore((s) => s.catalog);
   const buyers = useStore((s) => s.buyers);
+  const importedAt = useStore((s) => s.importedAt);
+  const noStock = useStore((s) => s.catalog.length > 0 && s.catalog.every((p) => p.initialStock === 0));
+
+  const [editingGiacenze, setEditingGiacenze] = useState(false);
 
   const bars = useMemo(() => stockBars({ catalog, buyers }), [catalog, buyers]);
   const productByNumber = useMemo(
@@ -74,11 +79,20 @@ export function Magazzino() {
     );
   }
 
+  if (editingGiacenze) {
+    return <MagazzinoGiacenze onDone={() => setEditingGiacenze(false)} />;
+  }
+
   return (
     <>
       <ScreenHeader
         title="Magazzino"
         subtitle="Giacenze per prodotto: ritirato, da consegnare, cuscinetto e ammanchi."
+        actions={
+          <Button variant="ghost" onClick={() => setEditingGiacenze(true)}>
+            {noStock ? 'Imposta giacenze' : 'Modifica giacenze'}
+          </Button>
+        }
       />
 
       <div className={styles.summary}>
@@ -97,6 +111,16 @@ export function Magazzino() {
           </span>
         </div>
       </div>
+
+      {importedAt != null && noStock && (
+        <div className={styles.bannerInfo}>
+          <span className={styles.bannerInfoGlyph} aria-hidden="true">i</span>
+          <div className={styles.bannerInfoBody}>
+            <strong>Giacenze non ancora impostate</strong>
+            <p>Inserisci i pezzi ricevuti per ogni prodotto quando arriva la merce.</p>
+          </div>
+        </div>
+      )}
 
       {shortBars.length > 0 && (
         <div className={styles.banner}>

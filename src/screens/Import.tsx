@@ -114,6 +114,7 @@ export function Import() {
     const buyers = drafts.filter((d) => d.valid).map((d) => d.buyer);
     importData(buyers);
     toast.show(`Import completato: ${buyers.length} buyer`, 'brass');
+    toast.show('Prossimo passo: imposta le giacenze in Prodotti quando arriva la merce.');
     navigate('/banco');
   };
 

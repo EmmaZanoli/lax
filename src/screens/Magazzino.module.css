@@ -35,6 +35,44 @@
   color: var(--unpaid);
 }
 
+/* ============================ Banner giacenze da impostare ============================ */
+
+.bannerInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--brass) 10%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--brass) 30%, transparent);
+}
+
+.bannerInfoGlyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brass) 22%, transparent);
+  color: var(--brass);
+  font-size: 14px;
+  font-weight: 700;
+  font-style: italic;
+  flex: none;
+}
+
+.bannerInfoBody {
+  flex: 1;
+}
+
+.bannerInfoBody p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
 /* ============================ Banner ammanchi ============================ */
 
 .banner {
