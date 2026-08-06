@@ -5,8 +5,9 @@ export type PaymentStatus = 'none' | 'cash' | 'pending' | 'received';
  * Tipo di ordine.
  * - `customer`: cliente da servire al banco (default).
  * - `personal`: merce che il seller tiene per sé. NON è un cliente da servire:
- *   esce dai conteggi del giorno e dai bucket di denaro dei clienti, ma scala
- *   comunque la giacenza e concorre al "Valore uso personale" del Recap.
+ *   esce dai conteggi del giorno, dai bucket di denaro dei clienti e da ogni
+ *   calcolo di magazzino (non intacca la giacenza: la merce personale è già
+ *   fuori dalle casse). Concorre solo al "Valore uso personale" del Recap.
  */
 export type OrderKind = 'customer' | 'personal';
 

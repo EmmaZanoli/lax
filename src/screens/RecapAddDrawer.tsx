@@ -86,8 +86,8 @@ export function RecapAddDrawer({ onClose }: { onClose: () => void }) {
 
       {isPersonal && (
         <p className={styles.addNote}>
-          Merce che tieni per te: fuori dai conti del giorno e dalla coda ritiri, ma scala
-          comunque la giacenza.
+          Merce che tieni per te: fuori dai conti del giorno, dalla coda ritiri e dal Magazzino
+          (non intacca la giacenza).
         </p>
       )}
 

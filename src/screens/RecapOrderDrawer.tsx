@@ -100,7 +100,8 @@ export function RecapOrderDrawer({ id }: { id: string }) {
       {personal ? (
         <p className={styles.addNote}>
           Merce per uso personale del seller: non entra nella coda ritiri, nei bucket di denaro
-          dei clienti né nella quadratura. Scala comunque la giacenza nel Magazzino.
+          dei clienti, nella quadratura né nella giacenza del Magazzino (la merce è già fuori
+          dalle casse).
         </p>
       ) : (
         <>
