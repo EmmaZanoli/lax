@@ -10,9 +10,12 @@ permissions:
   pages: write
   id-token: write
 
+# Un solo deploy Pages alla volta, ma NON cancellare quelli in corso: cancellare
+# un deploy Pages a metà può lasciare la pipeline di GitHub incastrata
+# (deployment_queued perenne). È la configurazione raccomandata da GitHub Pages.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -22,7 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - run: npm ci
@@ -36,9 +39,16 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # La pipeline di GitHub Pages a volte è molto lenta a prendere in
+          # carico il deployment (anche >10 min): col timeout di default (10 min)
+          # il deploy si autoabortiva pur senza errori, restando "deployment_queued".
+          # 30 min di margine per gli intoppi lato GitHub. (valore in millisecondi)
+          timeout: 1800000
