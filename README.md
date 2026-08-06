@@ -10,10 +10,11 @@ Un *seller* ha raccolto ordini via Google Form; i *buyer* vengono di persona, ri
 
 ## Deploy su GitHub Pages
 
-**App live:** https://emmzanoli.github.io/lax/
+**App live:** https://emmazanoli.github.io/lax/
 
 Il deploy avviene **automaticamente a ogni push su `main`** tramite GitHub Actions
-(workflow in `.github/workflows/deploy.yml`).
+(workflow in `.github/workflows/deploy.yml`). Routing con `HashRouter` e base path `/lax/`:
+nessuna configurazione server richiesta.
 
 ### Primo setup (una volta sola)
 
@@ -27,30 +28,34 @@ Puoi anche avviare un deploy manuale dalla tab **Actions → Deploy to GitHub Pa
 ### Dati e privacy (repo pubblico)
 
 **Sul repository e sul sito pubblicato non finiscono mai dati personali.**
-I dati importati (nomi, telefoni, email dei buyer, ordini) vivono esclusivamente
-in IndexedDB nel browser di chi usa l'app e non lasciano mai il dispositivo.
+I dati importati (nomi, telefoni, email dei buyer, ordini) e il catalogo con i prezzi
+vivono esclusivamente in IndexedDB nel browser di chi usa l'app e non lasciano mai il dispositivo.
 
-Il `.gitignore` esclude esplicitamente `ordine.xlsx`, `public/catalog.json`,
-`lax-backup*.json` e qualsiasi CSV — solo il codice è pubblico.
+Il `.gitignore` esclude esplicitamente l'export del Google Form (`ordine.xlsx`/`ordine.csv`
+e ogni `*.xlsx`/`*.csv`), il catalogo reale (`public/catalog.json`) e i backup/recap esportati
+dall'app (`backup-lax-*.json`, …) — solo il codice è pubblico.
 
 ---
 
 ## Caratteristiche
 
 - **Nessun backend, nessun login.** Tutto vive nel browser.
-- **Offline (PWA).** Una volta caricata, l'app funziona senza rete durante la giornata: service worker con precache di codice, stili, font (self-hosted) e catalogo.
-- **Persistenza a prova di refresh.** Lo stato è salvato su **IndexedDB** a ogni azione e ricaricato all'avvio; una guardia avvisa prima di chiudere se ci sono ordini caricati.
-- **Import flessibile** da CSV/XLSX con mappatura colonne che regge le variazioni del Google Form di anno in anno.
+- **Offline (PWA installabile).** Service worker (Workbox) con precache di codice, stili, HTML, font (self-hosted) e icone. I dati (catalogo e ordini) stanno in IndexedDB, un **livello separato che il service worker non tocca mai**: restano intatti anche attraverso gli aggiornamenti dell'app. Un banner (`registerType: 'prompt'`) segnala la nuova versione e chiede conferma prima di ricaricare.
+- **Persistenza a prova di refresh.** Lo stato è salvato su **IndexedDB** a ogni azione e ricaricato all'avvio prima del primo render. All'avvio l'app chiede al browser lo **storage persistente** (`navigator.storage.persist`) per non farsi sfrattare IndexedDB; una guardia avvisa prima di chiudere se ci sono ordini caricati.
+- **Import da CSV/XLSX** con mappatura colonne che regge le variazioni annuali del Google Form: i prodotti si agganciano **per numero** (l'intero iniziale dell'etichetta), mai per nome. L'anteprima evidenzia le righe problematiche (nome mancante, ordine vuoto, quantità non intere corrette, nomi duplicati) e riconcilia l'ordinato con la giacenza. La mappatura viene salvata per un reimport immediato dello stesso formato.
+- **Uso personale.** Un ordine può essere merce che il seller tiene per sé: fuori dalla coda ritiri, dai conti di cassa, dalla quadratura e dal magazzino, con una voce dedicata nel Recap e nell'export.
+- **Sicurezza dei dati.** Backup/ripristino dell'intero stato in JSON e un indicatore in sidebar che avvisa quando ci sono modifiche non ancora salvate in un backup.
 - **Annulla a un livello** sempre disponibile e toast di conferma su ogni azione.
 
 ## Regole di dominio (invarianti)
 
-- Ordini **immutabili**: al ritiro si cambia solo lo *stato*, mai il contenuto. Nessun cliente fuori lista.
+- Ordini **immutabili**: al ritiro si cambia solo lo *stato*, mai il contenuto. Nessun cliente fuori lista. *Unica eccezione all'esistenza (non al contenuto):* un ordine aggiunto a mano può essere eliminato dal Recap; gli ordini importati mai.
 - Il **ritiro è sempre totale**, mai parziale.
 - Due stati indipendenti per buyer: `pickedUp` (bool) e `payment` ∈ `none | cash | pending | received`, con l'invariante **`payment ≠ none ⇒ pickedUp = true`**.
 - I **prezzi vivono solo nel catalogo**: il totale si ricalcola sempre come Σ(quantità × prezzo). Eventuali totali nel file d'import sono ignorati.
-- La **giacenza la scala il ritiro**, non il pagamento: `residuo = giacenza iniziale − pezzi ritirati`.
-- Il **numero di prodotto** è la chiave stabile per l'aggancio catalogo ↔ CSV.
+- La **giacenza la scala il ritiro dei clienti**, non il pagamento: `residuo = giacenza iniziale − pezzi ritirati`.
+- Il **numero di prodotto** è la chiave stabile per l'aggancio catalogo ↔ foglio risposte.
+- Gli ordini **`personal`** (uso personale) restano fuori da Banco, bucket di denaro dei clienti, quadratura clienti e da ogni calcolo di magazzino.
 
 ---
 
@@ -58,28 +63,28 @@ Il `.gitignore` esclude esplicitamente `ordine.xlsx`, `public/catalog.json`,
 
 - **Vite + React + TypeScript**
 - **Zustand** con middleware `persist` su **IndexedDB** (storage custom via `idb-keyval`)
-- **react-router-dom** (rotta di default `/banco`)
-- **papaparse** (CSV) ed **ExcelJS** (Excel) per import ed export del recap
+- **react-router-dom** con `HashRouter` (rotta di default `/banco`)
+- **papaparse** (CSV) ed **ExcelJS** (lettura `.xlsx` in import + generazione del recap Excel), caricati con import dinamico
 - Font **self-hosted**: `@fontsource-variable/fraunces` e `@fontsource/inter`
 - **vite-plugin-pwa** (Workbox) per l'uso offline
+- **Vitest** per i test della logica di dominio
 
 ## Requisiti
 
-- Node.js 20+ (sviluppato con Node 22) e npm.
+- Node.js 20+ (CI e sviluppo su Node 22) e npm.
 
 ## Comandi
 
 ```bash
 npm install       # installa le dipendenze
 npm run dev       # avvia l'ambiente di sviluppo (apre il browser)
-npm run build     # type-check + build di produzione in dist/
+npm run build     # genera le icone PWA + type-check + build di produzione in dist/
 npm run preview   # serve la build (utile per provare l'offline/PWA)
 npm run typecheck # solo controllo dei tipi
+npm test          # esegue i test (Vitest)
 ```
 
 Per provare il funzionamento offline: `npm run build && npm run preview`, apri l'app, poi disattiva la rete e ricarica.
-
-> In sviluppo, al primo avvio, vengono caricati dati di esempio (catalogo + buyer, con un prodotto volutamente *scoperto*) per avere qualcosa con cui lavorare. In produzione l'app parte dal solo catalogo.
 
 ---
 
@@ -94,10 +99,10 @@ npm run preview   # avvia il server locale e lascialo aperto tutto il giorno
 
 Gira **tutto in locale**: né `build` né `preview` richiedono Internet (le dipendenze sono già installate).
 
-**Perché non `npm run dev`:**
+**Perché la build e non `dev`:**
 
-- **Carica i dati di esempio (seed).** In sviluppo, con lo store vuoto, partono buyer e giacenze finti. La build di produzione parte pulita: importi l'Excel vero e inserisci le giacenze reali.
-- **Niente offline.** Il service worker PWA (precache + funzionamento senza rete) è generato **solo nella build**; in `dev` non c'è.
+- **L'offline esiste solo nella build.** Il service worker PWA (precache + funzionamento senza rete) è generato **solo da `npm run build`**; in `dev` non c'è.
+- **Parte pulita.** Niente buyer finti: la build parte dal solo **catalogo** (caricato una volta da `public/catalog.json`, o richiesto a schermo se assente). Importi l'Excel vero e imposti le giacenze reali.
 
 > ### ⚠️ Usa sempre la stessa origine (porta + browser)
 >
@@ -109,32 +114,34 @@ Gira **tutto in locale**: né `build` né `preview` richiedono Internet (le dipe
 
 1. `npm run build` — rifallo solo se cambi codice o `public/catalog.json`, **mai** durante la giornata.
 2. `npm run preview` e apri `http://localhost:4173`.
-3. **Prova generale:** importa l'Excel reale e verifica i conteggi in anteprima; inserisci le **giacenze iniziali** da **Prodotti → Gestione catalogo** (è l'unico punto per farlo).
+3. **Prova generale:** importa l'Excel reale e verifica i conteggi in anteprima; inserisci le **giacenze iniziali** da **Magazzino → Modifica giacenze** (quando arriva la merce).
 4. **Ricarica un paio di volte:** buyer e giacenze devono restare (verifica la persistenza *prima* del giorno).
 5. *Facoltativo ma consigliato:* **installa la PWA** (icona nella barra degli indirizzi) per aprirla come app a sé, che si regge sulla cache anche se chiudi il terminale.
+6. Esporta un **backup** e verifica di saperlo ripristinare.
 
-**Durante la giornata:** lascia `preview` in esecuzione (o usa la PWA installata); non svuotare i dati del sito / la cache; non cambiare browser o profilo; non rifare la build.
+**Durante la giornata:** lascia `preview` in esecuzione (o usa la PWA installata); non svuotare i dati del sito / la cache; non cambiare browser o profilo; non rifare la build. Esporta un backup più volte come rete di sicurezza.
 
 ---
 
-## Le cinque schermate
+## Le sei schermate
 
 | Rotta | Nome | Ruolo |
 |---|---|---|
-| `/import` | Import | Carica il file, mappa le colonne, anteprima, riconciliazione ordinato vs giacenza. |
-| `/banco` | Banco | Operativo, search-first: trova → ordine e importo → pagamento → salva. Calcolo del resto per i contanti. |
-| `/magazzino` | Magazzino | Giacenze: barra di capacità per prodotto (ritirati / da consegnare / cuscinetto / scoperto). |
-| `/recap` | Recap ordini | Tutti gli ordini, filtrabili, con quadratura. Modifica nel drawer laterale. Export + backup. |
-| `/prodotti` | Prodotti | Sola anagrafica del catalogo. Da qui si apre la **gestione catalogo**. |
+| `/import` | Import | Carica l'export del Google Form, mappa le colonne (prodotti per numero), anteprima con righe problematiche e nomi duplicati, riconciliazione ordinato vs giacenza. Salva la mappatura per il reimport. |
+| `/banco` | Banco | Operativo, search-first (solo chi non ha ritirato): trova → ordine e importo → pagamento → salva. Navigazione da tastiera (frecce/Invio), calcolo del resto per i contanti. |
+| `/magazzino` | Magazzino | Giacenze per prodotto (solo ordini clienti): barra ritirati / da consegnare / cuscinetto / scoperto. Qui si impostano e modificano le **giacenze iniziali**. |
+| `/recap` | Recap ordini | Tutti gli ordini, filtrabili (incluso *Uso personale*), con quadratura clienti. Modifica nel drawer laterale; "Aggiungi ordine" (cliente o uso personale) ed eliminazione dei soli ordini manuali. |
+| `/prodotti` | Prodotti | Sola anagrafica del catalogo (nessun dato di magazzino). Da qui la **gestione catalogo** (file, prezzo, descrizione, foto). |
+| `/backup` | Backup | Esporta e ripristina l'intero stato in JSON (validazione + conferma). Percorso di recupero da disastro e di trasferimento tra dispositivi. |
 
 ## Struttura del progetto
 
 ```
-public/            catalog.json (catalogo di default) + icona PWA
+public/            catalog.json (catalogo di default, non versionato) + icone PWA
 src/
   tokens/          design tokens (TS) + variabili CSS globali
   components/       componenti condivisi (Sidebar, Drawer, Chip, Toast, …)
-  screens/          le cinque schermate
+  screens/          le sei schermate
   lib/              modello dati, store, selettori puri, persistenza, export
     import/         parsing file, mappatura colonne, riconciliazione
 ```
@@ -143,10 +150,13 @@ src/
 
 ```ts
 type PaymentStatus = 'none' | 'cash' | 'pending' | 'received';
+type OrderKind = 'customer' | 'personal'; // default 'customer'
 
 interface Product {
-  number: number;       // chiave stabile
+  number: number;       // chiave stabile (aggancio col foglio risposte)
   nameSv: string;       // nome svedese (mostrato)
+  weight: string;       // formato/peso (es. "1/1", "300g")
+  category?: string;    // raggruppamento (es. Salmone / Anguilla / Aringhe)
   descIt: string;       // descrizione italiana
   photoUrl?: string;
   price: number;        // unica fonte di verità per i prezzi
@@ -157,9 +167,12 @@ interface Buyer {
   id: string;
   name: string;
   phone?: string;
+  email?: string;                // da "Indirizzo email" del foglio risposte
   order: Record<number, number>; // numeroProdotto -> quantità
   pickedUp: boolean;
   payment: PaymentStatus;
+  kind: OrderKind;               // 'customer' (default) | 'personal'
+  manual?: boolean;              // true se aggiunto a mano dal Recap (eliminabile)
 }
 
 interface AppState { catalog: Product[]; buyers: Buyer[]; importedAt?: string; }
@@ -167,30 +180,30 @@ interface AppState { catalog: Product[]; buyers: Buyer[]; importedAt?: string; }
 
 ## Catalogo
 
-Il catalogo è una fonte a sé, con un ciclo di vita diverso dagli ordini, ed è **facilmente sostituibile**: vive in [`public/catalog.json`](public/catalog.json) e viene caricato all'avvio quando lo store è ancora vuoto.
+Il catalogo ha un ciclo di vita diverso dagli ordini (cambia di rado) ed è **facilmente sostituibile**. Contiene prezzi e anagrafica: è un **dato locale privato e non versionato**.
 
-Dalla schermata **Prodotti → Gestione catalogo** si può:
+- **In sviluppo / build locale:** vive in `public/catalog.json` e viene caricato all'avvio se IndexedDB è ancora vuoto. Se il catalogo è già persistito, resta quello (la giacenza iniziale inserita non viene mai sovrascritta da un reload).
+- **Sul sito pubblico:** `catalog.json` non è nel bundle. Al primo avvio l'app mostra una schermata di benvenuto ("Carica il catalogo per iniziare") con un caricatore di file; da lì in poi il catalogo persiste in IndexedDB su quel browser.
 
-- caricare/sostituire il file di catalogo (JSON);
-- impostare la **giacenza iniziale** di ogni prodotto (una tantum, quando arriva la merce);
-- modificare prezzo, descrizione e foto.
-
-Prezzo e giacenza iniziale alimentano tutto il resto (totali e magazzino): ogni modifica si riflette subito.
+Dalla schermata **Prodotti → Gestione catalogo** si può caricare/sostituire il file di catalogo (JSON) e modificare **prezzo, descrizione e foto**. Le **giacenze iniziali** si impostano invece dal **Magazzino** (Prodotti resta pura anagrafica). Prezzo e giacenza alimentano tutto il resto (totali e magazzino): ogni modifica si riflette subito.
 
 ## Dati, backup ed export
 
-- **Persistenza:** IndexedDB (mai `localStorage`). Salvataggio automatico a ogni azione, reidratazione all'avvio prima del primo render.
-- **Esporta recap:** CSV di fine giornata con le cinque voci di denaro, la lista ordini con stato e il magazzino (ordinati/ritirati/residuo).
-- **Backup:** intero stato in JSON.
+- **Persistenza:** IndexedDB (mai `localStorage`), via `idb-keyval`. Salvataggio automatico a ogni azione, reidratazione all'avvio prima del primo render; storage persistente richiesto al browser all'avvio.
+- **Esporta recap:** file **Excel** (`lax-recap-AAAA-MM-GG.xlsx`, generato con ExcelJS) a 5 fogli — Riepilogo (KPI + quadratura), Ordini (clienti), Magazzino (clienti), Uso personale (itemizzato per prodotto), Fornitore (clienti + personale, per riconciliare la fattura). Usa formule Excel dove opportuno. Pulsante nella sidebar.
+- **Backup/ripristino:** dalla schermata `/backup`, l'intero stato in JSON (`backup-lax-…json`); il ripristino valida il file, chiede conferma e normalizza l'invariante pagamento⇒ritiro. Un indicatore in sidebar mostra da quanto non si fa un backup e avvisa se ci sono modifiche non salvate.
 - **Nuovo anno:** azzera i buyer (con doppia conferma) conservando il catalogo.
+- **Annulla:** snapshot a un livello prima di ogni mutazione.
 
-Export, backup e Annulla sono raggiungibili con un click dalla colonna laterale, da qualsiasi schermata.
+Esporta recap, Annulla e Nuovo anno sono nella colonna laterale (da qualsiasi schermata); l'indicatore di backup porta alla schermata `/backup`.
 
 ---
 
-## In sospeso (dati reali non ancora disponibili)
+## Test
 
-- **Prezzi e formato CSV reale** — verificare se il CSV cita i prodotti per numero o per nome, e riempire `public/catalog.json` con i prezzi veri.
-- **Contenuti del catalogo** — descrizioni italiane, nomi svedesi definitivi e foto in `public/catalog.json`.
+La logica di dominio è coperta da **Vitest**: selettori di denaro e magazzino, l'invariante `payment ≠ none ⇒ pickedUp` nello store, il parsing dell'import sul **foglio reale** (`ordine.xlsx`, fixture anonimizzata) con l'aggancio prodotti per numero, la gestione delle anomalie (ordine vuoto, quantità non intere corrette, nomi duplicati), l'anti-perdita-dati e la logica di avvio (`resolveBootstrap`).
 
-Finché mancano, si lavora con i dati di esempio (seed di sviluppo).
+```bash
+npm test          # esegue la suite una volta
+npm run test:watch
+```
