@@ -54,7 +54,7 @@ export function ImportDropZone({ onFile, busy = false }: ImportDropZoneProps) {
         ref={inputRef}
         className={styles.hiddenInput}
         type="file"
-        accept=".csv,.tsv,.txt,.xlsx,.xls,.xlsm"
+        accept=".csv,.tsv,.txt,.xlsx,.xlsm"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) onFile(file);

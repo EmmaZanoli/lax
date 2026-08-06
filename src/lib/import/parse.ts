@@ -1,9 +1,10 @@
 import type { ParsedTable } from './types';
 
-// NB: `papaparse` e soprattutto `xlsx` (SheetJS) sono librerie pesanti ma servono
-// SOLO durante l'import. Vengono caricate con import() dinamico, così finiscono
-// in chunk a parte (precache-ati dal service worker, quindi disponibili offline)
-// e non appesantiscono il bundle principale caricato da ogni schermata.
+// NB: `papaparse` (CSV) è importato dinamicamente, così finisce in un chunk a
+// parte (precache-ato dal service worker → offline) e non appesantisce il bundle
+// principale. Gli `.xlsx` li legge ExcelJS, GIÀ nel bundle per l'export del
+// recap: nessuna seconda libreria Excel (niente SheetJS/xlsx, che tra l'altro
+// non è più pubblicato su npm con i fix di sicurezza).
 
 /** Normalizza una cella a stringa pulita (togliendo BOM e spazi). */
 function cell(value: unknown): string {
@@ -30,7 +31,7 @@ function extensionOf(name: string): string {
 export async function parseFile(file: File): Promise<ParsedTable> {
   const ext = extensionOf(file.name);
   if (ext === 'csv' || ext === 'tsv' || ext === 'txt') return parseCsv(file);
-  if (ext === 'xlsx' || ext === 'xls' || ext === 'xlsm') return parseExcel(file);
+  if (ext === 'xlsx' || ext === 'xlsm') return parseExcel(file);
   throw new Error(`Formato non supportato (.${ext}). Usa .csv o .xlsx.`);
 }
 
@@ -61,30 +62,65 @@ async function parseCsv(file: File): Promise<ParsedTable> {
 }
 
 /**
+ * Converte il valore di una cella ExcelJS nel suo testo. ExcelJS restituisce
+ * tipi ricchi (numeri, date, rich text, formule, hyperlink); li normalizziamo a
+ * stringa come faceva SheetJS con `raw:false`, così l'aggancio prodotti (intero
+ * iniziale dell'etichetta) e le quantità (testo libero del form) restano identici.
+ */
+function cellText(value: unknown): string {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'object') {
+    const o = value as Record<string, unknown>;
+    // Rich text: concatena i frammenti (le etichette-prodotto possono esserlo).
+    if (Array.isArray(o.richText)) {
+      return (o.richText as { text?: string }[]).map((r) => r.text ?? '').join('');
+    }
+    if ('result' in o) return cellText(o.result); // formula col risultato precalcolato
+    if ('text' in o) return String(o.text ?? ''); // hyperlink
+    if ('formula' in o || 'error' in o) return ''; // formula senza risultato / errore
+  }
+  return String(value);
+}
+
+/**
  * Legge un workbook Excel già in memoria (primo foglio) e lo normalizza a
  * colonne + righe di stringhe. Estratta da `parseExcel` per essere testabile
  * senza l'API `File` (i test la chiamano con il buffer del foglio reale).
- * `raw: false` forza i valori come testo formattato: così "00" resta "00" e le
- * celle vuote/saltate diventano '' (poi lette come 0 a valle).
- * È async perché `xlsx` viene importato dinamicamente (vedi nota in testa).
+ * È async perché ExcelJS viene importato dinamicamente (vedi nota in testa).
  */
 export async function tableFromWorkbookBuffer(
   buffer: ArrayBuffer | Uint8Array,
   fileName: string,
 ): Promise<ParsedTable> {
-  const XLSX = await import('xlsx');
+  const ExcelJS = await import('exceljs');
+  const wb = new ExcelJS.Workbook();
   const data = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
-  const workbook = XLSX.read(data, { type: 'array' });
-  const firstSheet = workbook.SheetNames[0];
-  const sheet = firstSheet ? workbook.Sheets[firstSheet] : undefined;
-  if (!sheet) throw new Error('Il foglio Excel è vuoto.');
-  const matrix = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
-    header: 1,
-    raw: false, // valori formattati come testo
-    defval: '',
-    blankrows: false,
+  await wb.xlsx.load(data as unknown as Parameters<typeof wb.xlsx.load>[0]);
+
+  const ws = wb.worksheets[0];
+  if (!ws) throw new Error('Il foglio Excel è vuoto.');
+
+  // getSheetValues: righe 1-indexed (a loro volta 1-indexed); le righe vuote sono
+  // buchi ⇒ saltate (equivale a blankrows:false). Riportiamo a 0-index e
+  // impaginiamo a larghezza costante, riempiendo le celle mancanti con '' (come
+  // faceva `defval:''`), così le celle saltate dalle diramazioni del form → 0.
+  const sheetValues = ws.getSheetValues() as unknown[][];
+  const rawRows: unknown[][] = [];
+  for (const row of sheetValues) {
+    if (!row) continue;
+    rawRows.push(row.slice(1));
+  }
+  const width = rawRows.reduce((m, r) => Math.max(m, r.length), 0);
+  const matrix = rawRows.map((r) => {
+    const out: string[] = [];
+    for (let i = 0; i < width; i++) out.push(cellText(r[i]));
+    return out;
   });
-  return toTable(matrix as unknown as string[][], fileName);
+
+  return toTable(matrix, fileName);
 }
 
 async function parseExcel(file: File): Promise<ParsedTable> {

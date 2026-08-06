@@ -59,7 +59,7 @@ Il `.gitignore` esclude esplicitamente `ordine.xlsx`, `public/catalog.json`,
 - **Vite + React + TypeScript**
 - **Zustand** con middleware `persist` su **IndexedDB** (storage custom via `idb-keyval`)
 - **react-router-dom** (rotta di default `/banco`)
-- **papaparse** (CSV) e **SheetJS/xlsx** (Excel) per l'import
+- **papaparse** (CSV) ed **ExcelJS** (Excel) per import ed export del recap
 - Font **self-hosted**: `@fontsource-variable/fraunces` e `@fontsource/inter`
 - **vite-plugin-pwa** (Workbox) per l'uso offline
 

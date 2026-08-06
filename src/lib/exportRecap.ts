@@ -1,5 +1,4 @@
-import { Workbook } from 'exceljs';
-import type { Cell, Fill } from 'exceljs';
+import type { Cell, Fill, Workbook } from 'exceljs';
 import type { AppState } from './types';
 import {
   totals,
@@ -864,7 +863,10 @@ function buildFornitore(wb: Workbook, state: AppState): void {
 // ── Esportazione principale ───────────────────────────────────────────────────
 
 export async function downloadRecap(state: AppState): Promise<void> {
-  const wb = new Workbook();
+  // ExcelJS è pesante e serve SOLO qui (export) e nell'import: import dinamico
+  // così finisce in un chunk a parte, fuori dal bundle iniziale del Banco.
+  const ExcelJS = await import('exceljs');
+  const wb = new ExcelJS.Workbook();
   wb.creator = 'lax';
   wb.created = new Date();
 

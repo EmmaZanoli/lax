@@ -20,7 +20,7 @@ const XLSX_PATH = fileURLToPath(new URL('../../../ordine.xlsx', import.meta.url)
 const CATALOG_PATH = fileURLToPath(new URL('../../../public/catalog.json', import.meta.url));
 
 const catalog: Product[] = parseCatalog(JSON.parse(readFileSync(CATALOG_PATH, 'utf8')));
-// tableFromWorkbookBuffer è async (xlsx caricato con import dinamico): top-level await.
+// tableFromWorkbookBuffer è async (ExcelJS caricato con import dinamico): top-level await.
 const table = await tableFromWorkbookBuffer(readFileSync(XLSX_PATH), 'ordine.xlsx');
 const mapping = autoMap(table.columns, catalog);
 const drafts = buildDrafts(table, mapping, catalog);
