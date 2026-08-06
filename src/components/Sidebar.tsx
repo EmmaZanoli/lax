@@ -236,7 +236,7 @@ export function Sidebar() {
 
       <div className={styles.tools}>
         <button type="button" className={styles.toolBtn} onClick={handleExport}>
-          Esporta recap
+          Esporta recap excel
         </button>
       </div>
 
