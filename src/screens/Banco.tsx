@@ -37,7 +37,9 @@ export function Banco() {
 
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const searchRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   // Solo clienti da servire: gli ordini per uso personale non passano dal Banco.
   const pending = useMemo(
@@ -59,10 +61,26 @@ export function Banco() {
     );
   }, [pending, query]);
 
+  // Riga evidenziata per la navigazione da tastiera (clampata ai risultati).
+  const active = filtered.length ? Math.min(activeIndex, filtered.length - 1) : -1;
+
   const selected = useMemo(
     () => (selectedId ? (pending.find((b) => b.id === selectedId) ?? null) : null),
     [pending, selectedId],
   );
+
+  // Ogni nuova ricerca riparte dal primo risultato.
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query]);
+
+  // Tiene visibile la riga evidenziata mentre si scorre con le frecce.
+  useEffect(() => {
+    if (active < 0) return;
+    (listRef.current?.children[active] as HTMLElement | undefined)?.scrollIntoView({
+      block: 'nearest',
+    });
+  }, [active]);
 
   // Se il buyer selezionato esce dalla lista (salvato/annullato), torna alla ricerca.
   useEffect(() => {
@@ -88,9 +106,18 @@ export function Banco() {
     backToSearch();
   };
 
+  // ↑/↓ scorrono i risultati, Invio apre quello evidenziato (di default il primo).
   const onSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && filtered.length === 1) {
-      setSelectedId(filtered[0].id);
+    if (filtered.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      setSelectedId(filtered[active].id);
     }
   };
 
@@ -143,6 +170,13 @@ export function Banco() {
               placeholder="Cerca un buyer per nome o telefono…"
               aria-label="Cerca un buyer"
               autoComplete="off"
+              role="combobox"
+              aria-expanded={filtered.length > 0}
+              aria-controls="banco-listbox"
+              aria-autocomplete="list"
+              aria-activedescendant={
+                active >= 0 ? `banco-opt-${filtered[active].id}` : undefined
+              }
             />
           </div>
 
@@ -155,12 +189,17 @@ export function Banco() {
               />
             </Panel>
           ) : (
-            <ul className={styles.list}>
-              {filtered.map((b) => (
+            <ul ref={listRef} id="banco-listbox" role="listbox" className={styles.list}>
+              {filtered.map((b, i) => (
                 <li key={b.id}>
                   <button
+                    id={`banco-opt-${b.id}`}
                     type="button"
+                    role="option"
+                    aria-selected={i === active}
+                    data-active={i === active || undefined}
                     className={styles.listRow}
+                    onMouseEnter={() => setActiveIndex(i)}
                     onClick={() => setSelectedId(b.id)}
                   >
                     <span className={styles.listMain}>

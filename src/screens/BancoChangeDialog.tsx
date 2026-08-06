@@ -15,6 +15,9 @@ function parseCash(raw: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Tagli rapidi: sommano al ricevuto le banconote consegnate (caso tipico). */
+const DENOMINATIONS = [5, 10, 20, 50];
+
 /** Piccolo dialog effimero per il calcolo del resto: non salva nulla. */
 export function BancoChangeDialog({ total, onClose }: BancoChangeDialogProps) {
   const [cash, setCash] = useState('');
@@ -31,6 +34,13 @@ export function BancoChangeDialog({ total, onClose }: BancoChangeDialogProps) {
 
   const received = parseCash(cash);
   const change = received == null ? null : received - total;
+
+  // Somma un taglio al ricevuto (più banconote → tap ripetuti) e resta sul campo.
+  const addCash = (amount: number) => {
+    const next = Math.round(((parseCash(cash) ?? 0) + amount) * 100) / 100;
+    setCash(String(next));
+    inputRef.current?.focus();
+  };
 
   return (
     <div
@@ -58,6 +68,19 @@ export function BancoChangeDialog({ total, onClose }: BancoChangeDialogProps) {
             placeholder="0,00"
           />
         </label>
+
+        <div className={styles.denoms}>
+          {DENOMINATIONS.map((d) => (
+            <button
+              key={d}
+              type="button"
+              className={styles.denomBtn}
+              onClick={() => addCash(d)}
+            >
+              +€{d}
+            </button>
+          ))}
+        </div>
 
         <div className={styles.dialogRow}>
           <span className="label">Resto</span>

@@ -63,6 +63,12 @@
   border-color: color-mix(in srgb, var(--brass) 35%, var(--rule));
 }
 
+/* Riga evidenziata dalla navigazione da tastiera (↑/↓): è quella che Invio apre. */
+.listRow[data-active] {
+  background: var(--surface);
+  border-color: var(--brass);
+}
+
 .listMain {
   display: flex;
   flex-direction: column;
@@ -446,6 +452,35 @@
 .dialogInput:focus-visible {
   border-color: var(--brass);
   outline: none;
+}
+
+/* ---- tagli rapidi banconote ---- */
+
+.denoms {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.denomBtn {
+  flex: 1;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--cash) 40%, transparent);
+  background: color-mix(in srgb, var(--cash) 12%, transparent);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease;
+}
+
+.denomBtn:hover {
+  background: color-mix(in srgb, var(--cash) 22%, transparent);
 }
 
 .resto {
