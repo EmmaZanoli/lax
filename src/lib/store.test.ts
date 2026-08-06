@@ -132,6 +132,18 @@ describe('azioni sui dati — importData / addBuyer / resetDay / clearAll', () =
     get().addBuyer(b({ id: 'z', order: { 1: 1 } }));
     expect(get().buyers.map((x) => x.id)).toEqual(['a', 'z']);
   });
+  it('deleteBuyer rimuove il buyer indicato e abilita undo', () => {
+    get().addBuyer(b({ id: 'z', order: { 1: 1 } }));
+    get().deleteBuyer('a');
+    expect(get().buyers.map((x) => x.id)).toEqual(['z']);
+    expect(get().canUndo).toBe(true);
+  });
+  it('undo ripristina un buyer eliminato (delete annullabile)', () => {
+    get().deleteBuyer('a');
+    expect(get().buyers).toEqual([]);
+    get().undo();
+    expect(get().buyers.map((x) => x.id)).toEqual(['a']);
+  });
   it('resetDay azzera i buyer ma conserva il catalogo', () => {
     get().resetDay();
     expect(get().buyers).toEqual([]);

@@ -40,6 +40,7 @@ interface StoreState extends AppState {
   undo: () => void;
   importData: (buyers: Buyer[], catalog?: Product[]) => void;
   addBuyer: (buyer: Buyer) => void;
+  deleteBuyer: (id: string) => void;
   setInitialStock: (number: number, value: number) => void;
   updateProduct: (number: number, patch: Partial<Product>) => void;
   loadCatalog: (catalog: Product[]) => void;
@@ -127,6 +128,13 @@ export const useStore = create<StoreState>()(
         // Aggiunge un singolo buyer manuale senza toccare gli altri.
         addBuyer: (buyer) => {
           commit({ buyers: [...get().buyers, buyer] });
+        },
+
+        // Rimuove un buyer per id. Annullabile (commit ⇒ snapshot). La UI la
+        // espone SOLO per gli ordini aggiunti a mano (buyer.manual): gli ordini
+        // importati restano immutabili.
+        deleteBuyer: (id) => {
+          commit({ buyers: get().buyers.filter((b) => b.id !== id) });
         },
 
         setInitialStock: (number, value) => {

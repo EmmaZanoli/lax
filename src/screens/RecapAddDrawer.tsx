@@ -50,6 +50,7 @@ export function RecapAddDrawer({ onClose }: { onClose: () => void }) {
       pickedUp: false,
       payment: 'none',
       kind,
+      manual: true, // aggiunto a mano ⇒ eliminabile dal drawer del Recap
     };
     addBuyer(buyer);
     toast.show(

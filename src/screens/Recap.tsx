@@ -328,7 +328,9 @@ export function Recap() {
       )}
 
       <Drawer open={!!selectedId} onClose={() => setSelectedId(null)} title="Ordine">
-        {lastIdRef.current && <RecapOrderDrawer id={lastIdRef.current} />}
+        {lastIdRef.current && (
+          <RecapOrderDrawer id={lastIdRef.current} onClose={() => setSelectedId(null)} />
+        )}
       </Drawer>
 
       <Drawer open={addOpen} onClose={() => setAddOpen(false)} title="Nuovo ordine manuale">

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { PaymentStatus } from '../lib';
 import { useStore, orderTotal, formatEuro, isPersonal } from '../lib';
-import { Button, Chip, useToast } from '../components';
+import { Button, Chip, ConfirmDialog, useToast } from '../components';
 import { BancoChangeDialog } from './BancoChangeDialog';
 import styles from './Recap.module.css';
 
@@ -20,17 +20,19 @@ const PAYMENT_TOAST: Record<PaymentStatus, string> = {
   received: 'bonifico ricevuto',
 };
 
-export function RecapOrderDrawer({ id }: { id: string }) {
+export function RecapOrderDrawer({ id, onClose }: { id: string; onClose: () => void }) {
   const toast = useToast();
-  const { buyer, catalog, setPayment, setPickup } = useStore(
+  const { buyer, catalog, setPayment, setPickup, deleteBuyer } = useStore(
     useShallow((s) => ({
       buyer: s.buyers.find((b) => b.id === id),
       catalog: s.catalog,
       setPayment: s.setPayment,
       setPickup: s.setPickup,
+      deleteBuyer: s.deleteBuyer,
     })),
   );
   const [changeOpen, setChangeOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const total = useMemo(() => (buyer ? orderTotal(buyer, catalog) : 0), [buyer, catalog]);
   const lines = useMemo(
@@ -63,6 +65,16 @@ export function RecapOrderDrawer({ id }: { id: string }) {
     setPayment(id, mode);
     toast.show(`${buyer.name}: ${PAYMENT_TOAST[mode]}`, 'brass');
     if (mode !== 'cash') setChangeOpen(false);
+  };
+
+  // Elimina un ordine aggiunto a mano (annullabile con «Annulla ultima azione»)
+  // e chiude il drawer, che altrimenti mostrerebbe un ordine inesistente.
+  const handleDelete = () => {
+    const name = buyer.name;
+    deleteBuyer(id);
+    setConfirmOpen(false);
+    toast.show(`Ordine eliminato: ${name}`, 'brass');
+    onClose();
   };
 
   return (
@@ -152,6 +164,28 @@ export function RecapOrderDrawer({ id }: { id: string }) {
 
           {changeOpen && <BancoChangeDialog total={total} onClose={() => setChangeOpen(false)} />}
         </>
+      )}
+
+      {buyer.manual && (
+        <div className={styles.deleteSection}>
+          <button type="button" className={styles.deleteBtn} onClick={() => setConfirmOpen(true)}>
+            Elimina ordine
+          </button>
+          <span className={styles.deleteHint}>Ordine aggiunto a mano</span>
+        </div>
+      )}
+
+      {confirmOpen && (
+        <ConfirmDialog
+          title="Elimina ordine"
+          confirmLabel="Elimina"
+          armedLabel="Sì, elimina"
+          onConfirm={handleDelete}
+          onClose={() => setConfirmOpen(false)}
+        >
+          Rimuovi l'ordine di <strong>{buyer.name}</strong>? È stato aggiunto a mano, non
+          dall'import.
+        </ConfirmDialog>
       )}
     </div>
   );

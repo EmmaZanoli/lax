@@ -34,6 +34,12 @@ export interface Buyer {
   payment: PaymentStatus;
   /** Tipo di ordine (default 'customer'). Vedi OrderKind. */
   kind: OrderKind;
+  /**
+   * true se l'ordine è stato aggiunto A MANO dal Recap ("Aggiungi ordine"), non
+   * dall'import. Solo questi sono eliminabili: gli ordini importati restano
+   * immutabili. Assente ⇒ importato (o dato vecchio), non eliminabile.
+   */
+  manual?: boolean;
 }
 
 /** Stato applicativo persistito. */

@@ -573,6 +573,40 @@
   line-height: 1.4;
 }
 
+/* Elimina ordine (solo ordini manuali): azione distruttiva discreta, in terracotta. */
+.deleteSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule-soft);
+}
+
+.deleteBtn {
+  padding: 8px var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--unpaid) 45%, transparent);
+  background: transparent;
+  color: var(--unpaid);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease;
+}
+
+.deleteBtn:hover {
+  background: color-mix(in srgb, var(--unpaid) 14%, transparent);
+  border-color: var(--unpaid);
+}
+
+.deleteHint {
+  font-size: 12px;
+  color: var(--text-weak);
+}
+
 .addForm {
   display: flex;
   flex-direction: column;
