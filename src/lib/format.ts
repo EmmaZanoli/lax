@@ -3,9 +3,9 @@ const euroNumber = new Intl.NumberFormat('it-IT', {
   maximumFractionDigits: 2,
 });
 
-/** Importo in euro con simbolo davanti: `€ 1.234,56`. */
+/** Importo in euro, convenzione italiana col simbolo dietro: `1.234,56 €` (coerente con l'export Excel). */
 export function formatEuro(value: number): string {
-  return `€ ${euroNumber.format(value)}`;
+  return `${euroNumber.format(value)} €`;
 }
 
 const dateTime = new Intl.DateTimeFormat('it-IT', {

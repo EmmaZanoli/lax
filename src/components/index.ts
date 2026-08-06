@@ -11,3 +11,4 @@ export { Drawer } from './Drawer';
 export { ConfirmDialog } from './ConfirmDialog';
 export { ToastProvider, useToast } from './Toast';
 export { UpdateBanner } from './UpdateBanner';
+export { useFocusTrap } from './useFocusTrap';

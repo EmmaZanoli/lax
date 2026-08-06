@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from './Button';
+import { useFocusTrap } from './useFocusTrap';
 import styles from './ConfirmDialog.module.css';
 
 interface ConfirmDialogProps {
@@ -23,6 +24,9 @@ export function ConfirmDialog({
   onClose,
 }: ConfirmDialogProps) {
   const [armed, setArmed] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useFocusTrap(true, dialogRef);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -39,7 +43,14 @@ export function ConfirmDialog({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={styles.dialog} role="alertdialog" aria-modal="true" aria-label={title}>
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className={styles.dialog}
+        role="alertdialog"
+        aria-modal="true"
+        aria-label={title}
+      >
         <h2 className={styles.title}>{title}</h2>
         <div className={styles.body}>{children}</div>
         {armed && (

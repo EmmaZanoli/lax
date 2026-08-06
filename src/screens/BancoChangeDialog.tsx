@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { formatEuro } from '../lib';
-import { Button } from '../components';
+import { Button, useFocusTrap } from '../components';
 import styles from './Banco.module.css';
 
 interface BancoChangeDialogProps {
@@ -22,6 +22,11 @@ const DENOMINATIONS = [5, 10, 20, 50];
 export function BancoChangeDialog({ total, onClose }: BancoChangeDialogProps) {
   const [cash, setCash] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap + ripristino (dichiarato prima dell'effetto sull'input, così il
+  // ripristino cattura il pulsante che ha aperto il dialog, non l'input).
+  useFocusTrap(true, dialogRef);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -49,7 +54,14 @@ export function BancoChangeDialog({ total, onClose }: BancoChangeDialogProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={styles.dialog} role="dialog" aria-modal="true" aria-label="Calcola resto">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className={styles.dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Calcola resto"
+      >
         <h2 className={styles.dialogTitle}>Calcola resto</h2>
 
         <div className={styles.dialogRow}>
@@ -77,7 +89,7 @@ export function BancoChangeDialog({ total, onClose }: BancoChangeDialogProps) {
               className={styles.denomBtn}
               onClick={() => addCash(d)}
             >
-              +€{d}
+              +{d} €
             </button>
           ))}
         </div>

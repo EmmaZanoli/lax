@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useFocusTrap } from './useFocusTrap';
 import styles from './Drawer.module.css';
 
 interface DrawerProps {
@@ -37,6 +38,9 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
   useEffect(() => {
     if (visible) panelRef.current?.focus();
   }, [visible]);
+
+  // Intrappola il Tab nel pannello e ripristina il focus alla chiusura.
+  useFocusTrap(open, panelRef);
 
   if (!mounted) return null;
 

@@ -18,10 +18,23 @@ function statusChip(b: StockBar) {
   return <Chip tone="received">coperto</Chip>;
 }
 
-function Bar({ b }: { b: StockBar }) {
+/** Descrizione parlata della barra per gli screen reader: nome + valori chiave. */
+function barLabel(b: StockBar, name: string): string {
+  const parts = [
+    `${b.initialStock} in giacenza iniziale`,
+    `${b.ordered} ordinati`,
+    `${b.pickedUp} ritirati`,
+    `${b.toDeliver} ancora da consegnare`,
+  ];
+  if (b.short > 0) parts.push(`${b.short} scoperti`);
+  if (b.cushion > 0) parts.push(`${b.cushion} di cuscinetto`);
+  return `${name}: ${parts.join(', ')}.`;
+}
+
+function Bar({ b, label }: { b: StockBar; label: string }) {
   const pct = (n: number) => (b.reference > 0 ? (n / b.reference) * 100 : 0);
   return (
-    <div className={styles.track} role="img" aria-label={`Barra capacità prodotto ${b.number}`}>
+    <div className={styles.track} role="img" aria-label={label}>
       {b.pickedUp > 0 && (
         <span className={`${styles.seg} ${styles.segPicked}`} style={{ width: `${pct(b.pickedUp)}%` }} />
       )}
@@ -159,6 +172,8 @@ export function Magazzino() {
       <div className={styles.rows}>
         {bars.map((b) => {
           const p = productByNumber.get(b.number);
+          const name = p?.nameSv ?? `#${b.number}`;
+          const label = barLabel(b, p?.weight ? `${name} ${p.weight}` : name);
           return (
             <div key={b.number} className={styles.row}>
               <div className={styles.ident}>
@@ -173,7 +188,7 @@ export function Magazzino() {
               </div>
 
               <div className={styles.barCol}>
-                <Bar b={b} />
+                <Bar b={b} label={label} />
               </div>
 
               <div className={styles.right}>
