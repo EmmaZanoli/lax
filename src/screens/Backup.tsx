@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Buyer, Product } from '../lib';
-import { useStore, downloadBackup, formatDateTime } from '../lib';
+import { useStore, downloadBackup, formatDateTime, timeAgo, needsBackup } from '../lib';
 import { Button, ConfirmDialog, Panel, ScreenHeader, useToast } from '../components';
 import styles from './Backup.module.css';
 
@@ -27,11 +27,22 @@ export function Backup() {
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
   const _replaceAll = useStore((s) => s._replaceAll);
+  const markBackedUp = useStore((s) => s.markBackedUp);
+
+  const hasData = useStore((s) => s.buyers.length > 0);
+  const lastBackupAt = useStore((s) => s.lastBackupAt);
+  const stale = useStore((s) =>
+    needsBackup(s.buyers.length > 0, {
+      lastBackupAt: s.lastBackupAt,
+      lastMutatedAt: s.lastMutatedAt,
+    }),
+  );
 
   const [pending, setPending] = useState<BackupFile | null>(null);
 
   const handleExport = () => {
     downloadBackup(useStore.getState());
+    markBackedUp();
     toast.show('Backup scaricato', 'brass');
   };
 
@@ -73,7 +84,15 @@ export function Backup() {
       b.payment !== 'none' ? { ...b, pickedUp: true } : b,
     );
 
-    _replaceAll({ catalog: pending.catalog, buyers, importedAt: pending.savedAt });
+    // Dopo il ripristino i dati coincidono con un file su disco (savedAt):
+    // nessuna modifica "da salvare" finché non si tocca qualcosa.
+    _replaceAll({
+      catalog: pending.catalog,
+      buyers,
+      importedAt: pending.savedAt,
+      lastBackupAt: pending.savedAt,
+      lastMutatedAt: pending.savedAt,
+    });
 
     const data = formatDateTime(pending.savedAt);
     toast.show(
@@ -92,6 +111,22 @@ export function Backup() {
       />
 
       <div className={styles.page}>
+        {hasData && (
+          <div className={styles.status} data-stale={stale || undefined}>
+            <div className={styles.statusMain}>
+              <span className="label">Ultimo backup</span>
+              <span className={styles.statusWhen}>
+                {lastBackupAt ? timeAgo(lastBackupAt) : 'Mai eseguito'}
+              </span>
+            </div>
+            <p className={styles.statusNote}>
+              {stale
+                ? 'Ci sono modifiche non ancora salvate in un backup: esportane uno per non rischiare di perderle.'
+                : 'I dati di oggi sono al sicuro in un backup.'}
+            </p>
+          </div>
+        )}
+
         <div className={styles.grid}>
           <Panel className={styles.card}>
             <div className={styles.cardIcon} aria-hidden="true">↓</div>

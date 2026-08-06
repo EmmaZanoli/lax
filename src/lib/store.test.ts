@@ -53,6 +53,8 @@ beforeEach(() => {
     importedAt: undefined,
     _snapshot: null,
     canUndo: false,
+    lastBackupAt: undefined,
+    lastMutatedAt: undefined,
   });
 });
 
@@ -145,5 +147,27 @@ describe('azioni sui dati — importData / addBuyer / resetDay / clearAll', () =
     get().importData([b({ id: 'x', order: { 2: 1 } })]);
     get().undo();
     expect(get().buyers.map((x) => x.id)).toEqual(['a']);
+  });
+});
+
+describe('metadati di backup — lastMutatedAt / lastBackupAt', () => {
+  it('una mutazione aggiorna lastMutatedAt', () => {
+    expect(get().lastMutatedAt).toBeUndefined();
+    get().setPayment('a', 'cash');
+    expect(get().lastMutatedAt).toBeTypeOf('string');
+  });
+  it('anche undo conta come modifica (aggiorna lastMutatedAt)', () => {
+    get().setPayment('a', 'cash');
+    useStore.setState({ lastMutatedAt: undefined });
+    get().undo();
+    expect(get().lastMutatedAt).toBeTypeOf('string');
+  });
+  it('markBackedUp registra il momento del backup senza toccare i dati', () => {
+    expect(get().lastBackupAt).toBeUndefined();
+    const buyersBefore = get().buyers;
+    get().markBackedUp();
+    expect(get().lastBackupAt).toBeTypeOf('string');
+    expect(get().buyers).toBe(buyersBefore);
+    expect(get().canUndo).toBe(false);
   });
 });

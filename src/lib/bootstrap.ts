@@ -1,6 +1,7 @@
 import { useStore } from './store';
 import { fetchCatalog } from './catalog';
 import { resolveBootstrap } from './bootstrapPlan';
+import { requestPersistentStorage } from './persistence';
 
 /**
  * Avvio dell'app: reidrata lo stato da IndexedDB PRIMA del primo render
@@ -14,6 +15,10 @@ import { resolveBootstrap } from './bootstrapPlan';
  * chiusura/refresh; la sostituzione del catalogo è deliberata (schermata Prodotti).
  */
 export async function bootstrap(): Promise<void> {
+  // Chiede lo storage persistente (non sfrattabile). Fire-and-forget: non deve
+  // ritardare il primo render né bloccare l'avvio se l'API manca.
+  void requestPersistentStorage();
+
   try {
     await useStore.persist.rehydrate();
   } catch (err) {

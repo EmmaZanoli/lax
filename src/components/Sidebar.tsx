@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { useStore, stockStatus, downloadRecap, isCustomer } from '../lib';
+import { useStore, stockStatus, downloadRecap, isCustomer, needsBackup, timeAgo } from '../lib';
 import { useToast } from './Toast';
 import { ConfirmDialog } from './ConfirmDialog';
 import styles from './Sidebar.module.css';
@@ -82,6 +82,47 @@ function WorkflowStepper({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Ora corrente, aggiornata a intervalli, per rinfrescare i tempi relativi. */
+function useNow(intervalMs: number): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}
+
+/**
+ * Indicatore "ultimo backup": entra in tono d'allarme (terracotta) quando ci
+ * sono modifiche non ancora salvate in un backup. Cliccandolo si va al Backup.
+ * Mostrato solo quando c'è lavoro della giornata (buyer presenti).
+ */
+function BackupStatus() {
+  const now = useNow(30_000);
+  const { hasData, lastBackupAt, stale } = useStore(
+    useShallow((s) => ({
+      hasData: s.buyers.length > 0,
+      lastBackupAt: s.lastBackupAt,
+      stale: needsBackup(s.buyers.length > 0, {
+        lastBackupAt: s.lastBackupAt,
+        lastMutatedAt: s.lastMutatedAt,
+      }),
+    })),
+  );
+
+  if (!hasData) return null;
+
+  return (
+    <Link to="/backup" className={styles.backup} data-stale={stale || undefined}>
+      <span className={styles.backupLabel}>Backup</span>
+      <span className={styles.backupWhen}>
+        {lastBackupAt ? `Salvato ${timeAgo(lastBackupAt, now)}` : 'Mai salvato'}
+      </span>
+      {stale && <span className={styles.backupNudge}>Salva una copia →</span>}
+    </Link>
   );
 }
 
@@ -191,7 +232,9 @@ export function Sidebar() {
         </ul>
       </nav>
 
-<div className={styles.tools}>
+<BackupStatus />
+
+      <div className={styles.tools}>
         <button type="button" className={styles.toolBtn} onClick={handleExport}>
           Esporta recap
         </button>

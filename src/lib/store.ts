@@ -29,6 +29,10 @@ interface StoreState extends AppState {
   _snapshot: Snapshot | null;
   /** true se c'è un'azione annullabile. */
   canUndo: boolean;
+  /** Timestamp ISO dell'ultima esportazione di backup (persistito). */
+  lastBackupAt?: string;
+  /** Timestamp ISO dell'ultima mutazione dei dati (persistito). */
+  lastMutatedAt?: string;
 
   // --- azioni ---
   setPayment: (id: string, mode: PaymentStatus) => void;
@@ -41,24 +45,33 @@ interface StoreState extends AppState {
   loadCatalog: (catalog: Product[]) => void;
   resetDay: () => void;
   clearAll: () => void;
+  /** Registra che è stato esportato un backup completo (azzera il "da salvare"). */
+  markBackedUp: () => void;
 
-  /** Reimposta lo stato dati senza toccare l'undo (uso interno: seed di sviluppo). */
-  _replaceAll: (data: Partial<AppState>) => void;
+  /** Reimposta lo stato dati senza toccare l'undo (uso interno: seed / ripristino). */
+  _replaceAll: (
+    data: Partial<AppState> & { lastBackupAt?: string; lastMutatedAt?: string },
+  ) => void;
   _setHydrated: (v: boolean) => void;
 }
 
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => {
+      const nowISO = () => new Date().toISOString();
+
       /** Cattura lo stato-dati corrente come snapshot per l'undo. */
       const snapshot = (): Snapshot => {
         const { catalog, buyers, importedAt } = get();
         return { catalog, buyers, importedAt };
       };
 
-      /** Applica una modifica ai dati salvando prima lo snapshot per l'undo. */
+      /**
+       * Applica una modifica ai dati salvando prima lo snapshot per l'undo e
+       * marcando il momento della mutazione (per l'indicatore "da salvare").
+       */
       const commit = (patch: Partial<AppState>) => {
-        set({ _snapshot: snapshot(), canUndo: true, ...patch });
+        set({ _snapshot: snapshot(), canUndo: true, lastMutatedAt: nowISO(), ...patch });
       };
 
       return {
@@ -68,6 +81,8 @@ export const useStore = create<StoreState>()(
         hydrated: false,
         _snapshot: null,
         canUndo: false,
+        lastBackupAt: undefined,
+        lastMutatedAt: undefined,
 
         // Sceglie il pagamento e garantisce l'invariante payment ≠ none ⇒ pickedUp.
         setPayment: (id, mode) => {
@@ -96,6 +111,7 @@ export const useStore = create<StoreState>()(
             importedAt: snap.importedAt,
             _snapshot: null,
             canUndo: false,
+            lastMutatedAt: nowISO(),
           });
         },
 
@@ -141,6 +157,8 @@ export const useStore = create<StoreState>()(
           commit({ catalog: [], buyers: [], importedAt: undefined });
         },
 
+        markBackedUp: () => set({ lastBackupAt: nowISO() }),
+
         _replaceAll: (data) => {
           set({
             ...data,
@@ -164,11 +182,15 @@ export const useStore = create<StoreState>()(
         }
         return s;
       },
-      // Persistiamo solo i dati, non l'undo né i flag di runtime.
+      // Persistiamo i dati e i timestamp di backup/mutazione (l'indicatore
+      // "da salvare" deve sopravvivere a chiusura/refresh). NON l'undo né i
+      // flag di runtime.
       partialize: (s) => ({
         catalog: s.catalog,
         buyers: s.buyers,
         importedAt: s.importedAt,
+        lastBackupAt: s.lastBackupAt,
+        lastMutatedAt: s.lastMutatedAt,
       }),
       // La reidratazione è pilotata manualmente all'avvio (vedi bootstrap in main.tsx).
       skipHydration: true,
