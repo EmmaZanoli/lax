@@ -47,8 +47,6 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
         with:
-          # La pipeline di GitHub Pages a volte è molto lenta a prendere in
-          # carico il deployment (anche >10 min): col timeout di default (10 min)
-          # il deploy si autoabortiva pur senza errori, restando "deployment_queued".
-          # 30 min di margine per gli intoppi lato GitHub. (valore in millisecondi)
-          timeout: 1800000
+          # 10 minuti è il MASSIMO consentito da deploy-pages (valori superiori
+          # vengono riportati d'ufficio a 600000 ms). (valore in millisecondi)
+          timeout: 600000
