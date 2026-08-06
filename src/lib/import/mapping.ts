@@ -154,15 +154,35 @@ export function buildDrafts(
     for (const { r, idx } of productCols) {
       const raw = (cells[idx] ?? '').trim();
       if (raw === '') continue; // cella vuota/saltata dalle diramazioni ⇒ 0
+      const col = table.columns[idx] || `Colonna ${idx + 1}`;
       const qty = parseQuantity(raw);
       if (qty == null) {
         // testo non convertibile a numero: segnala, non bloccare.
-        issues.push({ type: 'bad-quantity', column: table.columns[idx] || `Colonna ${idx + 1}`, value: raw });
+        issues.push({ type: 'bad-quantity', column: col, value: raw });
         continue;
       }
-      if (qty <= 0) continue; // "0"/"00" ⇒ nessun pezzo
+      // I pezzi sono interi: decimali e negativi sono anomalie. Arrotondiamo e
+      // clampiamo a 0, SEGNALANDO l'aggiustamento invece di ingoiarlo in silenzio.
+      if (qty < 0 || !Number.isInteger(qty)) {
+        const applied = Math.max(0, Math.round(qty));
+        issues.push({ type: 'adjusted-quantity', column: col, value: raw, applied });
+        if (applied === 0) continue;
+        order[r.number] = (order[r.number] ?? 0) + applied;
+        pieces += applied;
+        continue;
+      }
+      if (qty === 0) continue; // "0"/"00" ⇒ nessun pezzo (normale, non segnalato)
       order[r.number] = (order[r.number] ?? 0) + qty;
       pieces += qty;
+    }
+
+    // Nome presente ma nessun prodotto ordinato: da rivedere, non importato.
+    // Non lo aggiungiamo se c'è già un'anomalia di quantità (che lo spiega).
+    const hasQtyIssue = issues.some(
+      (i) => i.type === 'bad-quantity' || i.type === 'adjusted-quantity',
+    );
+    if (name !== '' && pieces === 0 && !hasQtyIssue) {
+      issues.push({ type: 'empty-order' });
     }
 
     let total = 0;
@@ -186,7 +206,7 @@ export function buildDrafts(
       total,
       pieces,
       issues,
-      valid: name !== '',
+      valid: name !== '' && pieces > 0,
     };
   });
 

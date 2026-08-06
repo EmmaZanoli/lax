@@ -73,7 +73,9 @@ export function Import() {
 
   const validCount = drafts.filter((d) => d.valid).length;
   const problemCount = drafts.filter((d) =>
-    d.issues.some((i) => i.type === 'name-missing' || i.type === 'bad-quantity'),
+    d.issues.some(
+      (i) => i.type === 'name-missing' || i.type === 'empty-order' || i.type === 'bad-quantity',
+    ),
   ).length;
   const duplicateCount = drafts.filter((d) =>
     d.issues.some((i) => i.type === 'duplicate-name'),
@@ -204,7 +206,7 @@ export function Import() {
               {problemCount > 0 && ` · ${problemCount} righe con problemi`}
               {duplicateCount > 0 && ` · ${duplicateCount} nomi duplicati da rivedere`}
               {validCount < drafts.length &&
-                ` · ${drafts.length - validCount} righe senza nome escluse`}
+                ` · ${drafts.length - validCount} righe escluse (senza nome o ordine vuoto)`}
             </span>
             <div className={styles.footerActions}>
               <Button variant="secondary" onClick={() => setStep('map')}>

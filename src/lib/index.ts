@@ -5,7 +5,7 @@ export { bootstrap } from './bootstrap';
 export { useUnloadGuard } from './useUnloadGuard';
 export { requestPersistentStorage, needsBackup } from './persistence';
 export type { BackupMeta } from './persistence';
-export { formatEuro, formatDateTime, lastName, timeAgo } from './format';
+export { formatEuro, formatDateTime, timeAgo } from './format';
 export {
   isPersonal,
   isCustomer,

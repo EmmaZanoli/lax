@@ -192,6 +192,60 @@ describe('buildDrafts — nomi duplicati (input sintetico)', () => {
   });
 });
 
+describe('buildDrafts — ordine vuoto e quantità anomale (input sintetico)', () => {
+  const columns = ['Cognome e nome', '1. Prodotto uno', '2. Prodotto due'];
+  const map: Mapping = [
+    { kind: 'name' },
+    { kind: 'product', number: 1 },
+    { kind: 'product', number: 2 },
+  ];
+  const make = (rows: string[][]) =>
+    buildDrafts({ fileName: 's.csv', columns, rows }, map, catalog);
+
+  it("segnala l'ordine vuoto e lo rende non importabile", () => {
+    const [empty, ok] = make([
+      ['Anna Verdi', '', ''], // contatti ma nessun prodotto
+      ['Bruno Neri', '2', ''], // ordine valido
+    ]);
+    expect(empty.pieces).toBe(0);
+    expect(empty.valid).toBe(false);
+    expect(empty.issues).toContainEqual({ type: 'empty-order' });
+    expect(ok.valid).toBe(true);
+    expect(ok.issues.some((i) => i.type === 'empty-order')).toBe(false);
+  });
+
+  it("arrotonda le quantità decimali all'intero più vicino e segnala l'aggiustamento", () => {
+    const [d] = make([['Carla Blu', '1,5', '2.4']]);
+    expect(d.buyer.order).toEqual({ 1: 2, 2: 2 }); // 1,5→2 ; 2.4→2
+    expect(d.pieces).toBe(4);
+    expect(d.valid).toBe(true);
+    expect(d.issues).toContainEqual({
+      type: 'adjusted-quantity',
+      column: '1. Prodotto uno',
+      value: '1,5',
+      applied: 2,
+    });
+    expect(d.issues.filter((i) => i.type === 'adjusted-quantity').length).toBe(2);
+  });
+
+  it('azzera le quantità negative o che arrotondano a 0 e le segnala', () => {
+    const [d] = make([['Dino Gialli', '-3', '0,4']]);
+    expect(d.buyer.order).toEqual({}); // -3→0 scartato, 0,4→0 scartato
+    expect(d.pieces).toBe(0);
+    expect(d.valid).toBe(false); // netto 0 pezzi ⇒ non importabile
+    expect(d.issues.filter((i) => i.type === 'adjusted-quantity').length).toBe(2);
+    // l'anomalia è già spiegata: niente doppio flag "ordine vuoto".
+    expect(d.issues.some((i) => i.type === 'empty-order')).toBe(false);
+  });
+
+  it('un intero valido non genera alcun avviso', () => {
+    const [d] = make([['Elsa Rosa', '3', '']]);
+    expect(d.buyer.order).toEqual({ 1: 3 });
+    expect(d.valid).toBe(true);
+    expect(d.issues).toEqual([]);
+  });
+});
+
 describe('reconcile — ordinato per prodotto', () => {
   it('somma l\'ordinato di tutti i clienti per prodotto (733 pezzi in totale)', () => {
     const rows = reconcile(drafts, catalog);

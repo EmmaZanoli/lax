@@ -19,14 +19,19 @@ export type ColumnRole =
 export type Mapping = ColumnRole[];
 
 /**
- * Problema rilevato su una riga in anteprima. Tutti NON bloccanti:
- * - `name-missing`: riga non importabile (senza nome) — l'unica che rende `valid=false`;
+ * Problema rilevato su una riga in anteprima. `name-missing` ed `empty-order`
+ * rendono la riga non importabile (`valid=false`); gli altri sono avvisi.
+ * - `name-missing`: riga senza nome — non importabile;
+ * - `empty-order`: nome presente ma nessun prodotto ordinato — non importabile;
  * - `bad-quantity`: cella prodotto con testo non convertibile a numero — la cella viene ignorata;
- * - `duplicate-name`: nome che compare su più righe (possibile doppio invio) — da rivedere, mai unito in automatico.
+ * - `adjusted-quantity`: quantità non intera o negativa — arrotondata/azzerata (`applied`), segnalata;
+ * - `duplicate-name`: nome su più righe (possibile doppio invio) — da rivedere, mai unito in automatico.
  */
 export type RowIssue =
   | { type: 'name-missing' }
+  | { type: 'empty-order' }
   | { type: 'bad-quantity'; column: string; value: string }
+  | { type: 'adjusted-quantity'; column: string; value: string; applied: number }
   | { type: 'duplicate-name'; count: number };
 
 /** Riga interpretata (bozza di buyer) con totale e problemi. */
@@ -36,7 +41,7 @@ export interface DraftRow {
   total: number; // ricalcolato dai prezzi di CATALOGO
   pieces: number; // pezzi totali nell'ordine
   issues: RowIssue[];
-  valid: boolean; // false se manca il nome (non importabile)
+  valid: boolean; // false se manca il nome o l'ordine è vuoto (non importabile)
 }
 
 /** Confronto ordinato vs giacenza iniziale per un prodotto. */

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { useStore, orderPieces, orderTotal, formatEuro, lastName, isCustomer } from '../lib';
+import { useStore, orderPieces, orderTotal, formatEuro, isCustomer } from '../lib';
 import { Button, Chip, EmptyState, Panel, ScreenHeader, useToast } from '../components';
 import { BancoBuyerCard, type SaveMode } from './BancoBuyerCard';
 import styles from './Banco.module.css';
@@ -46,10 +46,7 @@ export function Banco() {
     () =>
       buyers
         .filter((b) => isCustomer(b) && !b.pickedUp)
-        .sort((a, b) => {
-          const cmp = lastName(a.name).localeCompare(lastName(b.name), 'it');
-          return cmp !== 0 ? cmp : a.name.localeCompare(b.name, 'it');
-        }),
+        .sort((a, b) => a.name.localeCompare(b.name, 'it')),
     [buyers],
   );
 

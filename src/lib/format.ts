@@ -23,12 +23,6 @@ export function formatDateTime(iso?: string): string {
   return Number.isNaN(d.getTime()) ? '—' : dateTime.format(d);
 }
 
-/** Cognome per l'ordinamento: ultima parola del nome completo. */
-export function lastName(fullName: string): string {
-  const parts = fullName.trim().split(/\s+/);
-  return parts[parts.length - 1] ?? fullName;
-}
-
 /**
  * Tempo trascorso da un istante ISO, in forma breve italiana ("poco fa",
  * "3 min fa", "2 h fa", "1 g fa"). `now` è iniettabile per i test.

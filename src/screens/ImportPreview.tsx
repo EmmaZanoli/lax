@@ -8,9 +8,11 @@ interface ImportPreviewProps {
   drafts: DraftRow[];
 }
 
-/** name-missing e bad-quantity sono problemi da correggere; duplicate-name è solo un avviso. */
+/** Righe non importabili o con celle illeggibili: da correggere. Il resto è avviso. */
 function isProblem(iss: RowIssue): boolean {
-  return iss.type === 'name-missing' || iss.type === 'bad-quantity';
+  return (
+    iss.type === 'name-missing' || iss.type === 'empty-order' || iss.type === 'bad-quantity'
+  );
 }
 
 function issueChips(row: DraftRow) {
@@ -27,10 +29,24 @@ function issueChips(row: DraftRow) {
             </Chip>
           );
         }
+        if (iss.type === 'empty-order') {
+          return (
+            <Chip key={i} tone="unpaid">
+              Ordine vuoto
+            </Chip>
+          );
+        }
         if (iss.type === 'bad-quantity') {
           return (
             <Chip key={i} tone="unpaid">
               Quantità «{iss.value}» in {iss.column}
+            </Chip>
+          );
+        }
+        if (iss.type === 'adjusted-quantity') {
+          return (
+            <Chip key={i} tone="pending">
+              «{iss.value}» → {iss.applied} in {iss.column}
             </Chip>
           );
         }
@@ -50,8 +66,11 @@ export function ImportPreview({ drafts }: ImportPreviewProps) {
     const valid = drafts.filter((d) => d.valid);
     const problem = drafts.filter((d) => d.issues.some(isProblem)).length;
     const duplicate = drafts.filter((d) => d.issues.some((i) => i.type === 'duplicate-name')).length;
+    const adjusted = drafts.filter((d) =>
+      d.issues.some((i) => i.type === 'adjusted-quantity'),
+    ).length;
     const totalValue = valid.reduce((s, d) => s + d.total, 0);
-    return { valid: valid.length, problem, duplicate, totalValue };
+    return { valid: valid.length, problem, duplicate, adjusted, totalValue };
   }, [drafts]);
 
   return (
@@ -61,6 +80,9 @@ export function ImportPreview({ drafts }: ImportPreviewProps) {
         <Chip tone={stats.problem ? 'unpaid' : 'neutral'}>{stats.problem} righe con problemi</Chip>
         {stats.duplicate > 0 && (
           <Chip tone="pending">{stats.duplicate} nomi duplicati da rivedere</Chip>
+        )}
+        {stats.adjusted > 0 && (
+          <Chip tone="pending">{stats.adjusted} quantità corrette</Chip>
         )}
         <Chip tone="brass">Totale ordini {formatEuro(stats.totalValue)}</Chip>
       </div>

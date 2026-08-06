@@ -12,7 +12,6 @@ import {
   isBalanced,
   isPersonal,
   isCustomer,
-  lastName,
 } from '../lib';
 import {
   Button,
@@ -107,10 +106,7 @@ export function Recap() {
 
   const rows = useMemo(() => {
     const list = buyers.filter(PREDS[filter]);
-    return list.sort((a, b) => {
-      const cmp = lastName(a.name).localeCompare(lastName(b.name), 'it');
-      return cmp !== 0 ? cmp : a.name.localeCompare(b.name, 'it');
-    });
+    return list.sort((a, b) => a.name.localeCompare(b.name, 'it'));
   }, [buyers, filter]);
 
   const cards: { key: FilterKey; label: string; value: number; count: number; tone: ChipTone }[] = [
