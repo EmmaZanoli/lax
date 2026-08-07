@@ -44,7 +44,7 @@ dall'app (`backup-lax-*.json`, …) — solo il codice è pubblico.
 - **Persistenza a prova di refresh.** Lo stato è salvato su **IndexedDB** a ogni azione e ricaricato all'avvio prima del primo render. All'avvio l'app chiede al browser lo **storage persistente** (`navigator.storage.persist`) per non farsi sfrattare IndexedDB; una guardia avvisa prima di chiudere se ci sono ordini caricati.
 - **Import da CSV/XLSX** con mappatura colonne che regge le variazioni annuali del Google Form: i prodotti si agganciano **per numero** (l'intero iniziale dell'etichetta), mai per nome. L'anteprima evidenzia le righe problematiche (nome mancante, ordine vuoto, quantità non intere corrette, nomi duplicati) e riconcilia l'ordinato con la giacenza. La mappatura viene salvata per un reimport immediato dello stesso formato.
 - **Uso personale.** Un ordine può essere merce che il seller tiene per sé: fuori dalla coda ritiri, dai conti di cassa, dalla quadratura e dal magazzino, con una voce dedicata nel Recap e nell'export.
-- **Sicurezza dei dati.** Backup/ripristino dell'intero stato in JSON e un indicatore in sidebar che avvisa quando ci sono modifiche non ancora salvate in un backup.
+- **Sicurezza dei dati.** Backup/ripristino dell'intero stato in JSON, **snapshot automatici** periodici in-app (ring buffer, ripristinabili dalla schermata Backup), un indicatore in sidebar che avvisa quando ci sono modifiche non salvate e — dopo l'export del recap — un invito a salvare anche un backup.
 - **Annulla a un livello** sempre disponibile e toast di conferma su ogni azione.
 
 ## Regole di dominio (invarianti)
@@ -190,8 +190,9 @@ Dalla schermata **Prodotti → Gestione catalogo** si può caricare/sostituire i
 ## Dati, backup ed export
 
 - **Persistenza:** IndexedDB (mai `localStorage`), via `idb-keyval`. Salvataggio automatico a ogni azione, reidratazione all'avvio prima del primo render; storage persistente richiesto al browser all'avvio.
-- **Esporta recap:** file **Excel** (`lax-recap-AAAA-MM-GG.xlsx`, generato con ExcelJS) a 5 fogli — Riepilogo (KPI + quadratura), Ordini (clienti), Magazzino (clienti), Uso personale (itemizzato per prodotto), Fornitore (clienti + personale, per riconciliare la fattura). Usa formule Excel dove opportuno. Pulsante nella sidebar.
+- **Esporta recap:** file **Excel** (`lax-recap-AAAA-MM-GG.xlsx`, generato con ExcelJS) a 5 fogli — Riepilogo (KPI + quadratura), Ordini (clienti), Magazzino (clienti), Uso personale (itemizzato per prodotto), Fornitore (clienti + personale, per riconciliare la fattura). Usa formule Excel dove opportuno. Pulsante nella sidebar; **dopo l'export un toast propone di salvare anche un backup**.
 - **Backup/ripristino:** dalla schermata `/backup`, l'intero stato in JSON (`backup-lax-…json`); il ripristino valida il file, chiede conferma e normalizza l'invariante pagamento⇒ritiro. Un indicatore in sidebar mostra da quanto non si fa un backup e avvisa se ci sono modifiche non salvate.
+- **Snapshot automatici:** ogni pochi minuti, se i dati sono cambiati, l'app salva silenziosamente uno snapshot in IndexedDB (ring buffer degli ultimi ~20), ripristinabile dalla schermata `/backup`. È una rete di sicurezza in-app per gli errori operativi (un «Nuovo anno» sbagliato, un ripristino errato, azioni di troppo oltre l'undo); vivendo nello stesso IndexedDB **non sostituisce** i backup su file. Si azzerano con «Nuovo anno».
 - **Nuovo anno:** azzera i buyer (con doppia conferma) conservando il catalogo.
 - **Annulla:** snapshot a un livello prima di ogni mutazione.
 

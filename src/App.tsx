@@ -1,10 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components';
 import { Backup, Banco, Import, Magazzino, Prodotti, Recap } from './screens';
-import { useUnloadGuard } from './lib';
+import { useUnloadGuard, useAutoBackup } from './lib';
 
 export function App() {
   useUnloadGuard();
+  useAutoBackup();
 
   return (
     <Routes>

@@ -5,6 +5,13 @@ export { bootstrap } from './bootstrap';
 export { useUnloadGuard } from './useUnloadGuard';
 export { requestPersistentStorage, needsBackup } from './persistence';
 export type { BackupMeta } from './persistence';
+export {
+  useAutoBackup,
+  loadAutoSnapshots,
+  saveAutoSnapshot,
+  clearAutoSnapshots,
+} from './autoBackup';
+export type { AutoSnapshot } from './autoBackup';
 export { formatEuro, formatDateTime, timeAgo } from './format';
 export {
   isPersonal,

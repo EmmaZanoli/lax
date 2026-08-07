@@ -23,8 +23,32 @@
   border: 1px solid var(--rule);
   box-shadow: var(--shadow-soft);
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   text-align: center;
   animation: toast-in 160ms ease-out;
+}
+
+/* Pulsante d'azione: riabilita i click (il viewport ha pointer-events:none). */
+.toastAction {
+  pointer-events: auto;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--brass) 55%, transparent);
+  background: color-mix(in srgb, var(--brass) 14%, transparent);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease;
+}
+
+.toastAction:hover {
+  background: color-mix(in srgb, var(--brass) 24%, transparent);
 }
 
 .toast[data-tone='brass'] {

@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { useStore, stockStatus, downloadRecap, isCustomer, needsBackup, timeAgo } from '../lib';
+import {
+  useStore,
+  stockStatus,
+  downloadRecap,
+  downloadBackup,
+  clearAutoSnapshots,
+  isCustomer,
+  needsBackup,
+  timeAgo,
+} from '../lib';
 import { useToast } from './Toast';
 import { ConfirmDialog } from './ConfirmDialog';
 import styles from './Sidebar.module.css';
@@ -165,6 +174,7 @@ export function Sidebar() {
   const canUndo = useStore((s) => s.canUndo);
   const undo = useStore((s) => s.undo);
   const resetDay = useStore((s) => s.resetDay);
+  const markBackedUp = useStore((s) => s.markBackedUp);
 
   const [resetOpen, setResetOpen] = useState(false);
 
@@ -175,10 +185,21 @@ export function Sidebar() {
 
   const handleExport = () => {
     downloadRecap(useStore.getState());
-    toast.show('Recap esportato', 'brass');
+    // Momento di sicurezza: dopo il recap, proponi di salvare anche un backup.
+    toast.show('Recap esportato', 'brass', {
+      action: {
+        label: 'Salva anche un backup',
+        onClick: () => {
+          downloadBackup(useStore.getState());
+          markBackedUp();
+          toast.show('Backup scaricato', 'brass');
+        },
+      },
+    });
   };
   const handleReset = () => {
     resetDay();
+    void clearAutoSnapshots(); // gli snapshot sono dati dell'anno appena chiuso
     setResetOpen(false);
     toast.show('Buyer azzerati · catalogo conservato', 'brass');
   };
